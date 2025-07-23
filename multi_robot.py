@@ -10,15 +10,17 @@ from pyrobopath.toolpath.preprocessing import *
 
 MATERIAL = 1
 
-MAX_CONTOUR_LENGTH = 100.0  # float
-
-GCODE_MODE    = True
+GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
+PREPROCESSING_MODE = True
+# True: preprocessing    False: skip preprocessing
 
 GCODE_PATH  = "./gcode/square.gcode"
-MANUAL_PATH = "./manual/test_2.txt"
+MANUAL_PATH = "./manual/test_1.txt"
+
+MAX_CONTOUR_LENGTH = 300.0  # float
 
 
 #-------------------- Toolpath --------------------
@@ -83,9 +85,10 @@ if SCHEDULE_MODE:
 #------------------ Preprocessing -----------------
 
 
-preprocessor = ToolpathPreprocessor()
-preprocessor.add_step(MaxContourLengthStep(MAX_CONTOUR_LENGTH))
-preprocessor.process(toolpath)
+if PREPROCESSING_MODE:
+    preprocessor = ToolpathPreprocessor()
+    preprocessor.add_step(MaxContourLengthStep(MAX_CONTOUR_LENGTH))
+    preprocessor.process(toolpath)
 
 
 #------------------- Scheduling -------------------
