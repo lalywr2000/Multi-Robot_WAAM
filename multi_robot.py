@@ -5,9 +5,12 @@ from pyrobopath.toolpath.preprocessing import LayerRangeStep
 from pyrobopath.process import AgentModel, create_dependency_graph_by_z
 from pyrobopath.collision_detection import FCLRobotBBCollisionModel
 from pyrobopath.toolpath_scheduling import MultiAgentToolpathPlanner,PlanningOptions, animate_multi_agent_toolpath_full
+from pyrobopath.toolpath.preprocessing import *
 
 
 MATERIAL = 1
+
+MAX_CONTOUR_LENGTH = 100.0  # float
 
 GCODE_MODE    = True
 # True: gcode toolpath   False: manual toolpath
@@ -75,6 +78,14 @@ if SCHEDULE_MODE:
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe2),
     )
     agent_models = {"robot1": agent1, "robot2": agent2}
+
+
+#------------------ Preprocessing -----------------
+
+
+preprocessor = ToolpathPreprocessor()
+preprocessor.add_step(MaxContourLengthStep(MAX_CONTOUR_LENGTH))
+preprocessor.process(toolpath)
 
 
 #------------------- Scheduling -------------------
