@@ -9,13 +9,13 @@ from pyrobopath.toolpath_scheduling import MultiAgentToolpathPlanner,PlanningOpt
 
 MATERIAL = 1
 
-GCODE_MODE    = True
+GCODE_MODE    = False
 # True: gcode toolpath   False: manual toolpath
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
 
 GCODE_PATH = "./gcode/square.gcode"
-MANUAL_PATH = "./manual/test_1.txt"
+MANUAL_PATH = "./manual/test_2.txt"
 
 
 #-------------------- Toolpath --------------------
