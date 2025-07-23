@@ -1,18 +1,21 @@
 import numpy as np
 from gcodeparser import GcodeParser
 from pyrobopath.toolpath import Contour, Toolpath, visualize_toolpath, visualize_toolpath_projection
+from pyrobopath.toolpath.preprocessing import LayerRangeStep
 from pyrobopath.process import AgentModel, create_dependency_graph_by_z
 from pyrobopath.collision_detection import FCLRobotBBCollisionModel
 from pyrobopath.toolpath_scheduling import MultiAgentToolpathPlanner,PlanningOptions, animate_multi_agent_toolpath_full
 
 
-CHUNK_1 = 1
-CHUNK_2 = 2
+MATERIAL = 1
 
-GCODE_MODE    = False  # True: gcode toolpath   False: manual toolpath
-SCHEDULE_MODE = True   # True: scheduling       False: visualize toolpath
+GCODE_MODE    = True
+# True: gcode toolpath   False: manual toolpath
+SCHEDULE_MODE = True
+# True: scheduling       False: visualizing toolpath
 
-GCODE_PATH = "./gcode/???.gcode"
+GCODE_PATH = "./gcode/square.gcode"
+MANUAL_PATH = "./manual/test_1.txt"
 
 
 #-------------------- Toolpath --------------------
@@ -25,23 +28,20 @@ if GCODE_MODE:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
+    LayerRangeStep(0, 1).apply(toolpath)  # Extract the first layer
 
 else:
-    points1 = [[-150.0, -150.0, 0.0],
-               [-150.0, 150.0, 0.0],
-               [150.0, 150.0, 0.0],
-               [150.0, -150.0, 0.0],]
-
-    points2 = [[-100.0, -100.0, 0.0],
-               [-100.0, 100.0, 0.0],
-               [100.0, 100.0, 0.0],
-               [100.0, -100.0, 0.0],]
-
-    path1 = [np.array(point) for point in points1]
-    path2 = [np.array(point) for point in points2]
-    contour1 = Contour(path1, tool=CHUNK_1)
-    contour2 = Contour(path2, tool=CHUNK_2)
-    toolpath = Toolpath([contour1, contour2])
+    path = []
+    contour = []
+    with open(MANUAL_PATH, "r") as f:
+        for line in f:
+            if not line.isspace():
+                point = np.array(list(map(float, line.split())))
+                path.append(point)
+            else:
+                contour.append(Contour(path, tool=MATERIAL))
+                path = []
+    toolpath = Toolpath(contour)
 
 
 #------------------ Agent Models ------------------
@@ -61,7 +61,7 @@ if SCHEDULE_MODE:
     agent1 = AgentModel(
         base_frame_position = baseframe1,
         home_position       = homepos1,
-        capabilities        = [CHUNK_1],
+        capabilities        = [0,1],
         velocity            = 50.0,
         travel_velocity     = 50.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe1),
@@ -69,7 +69,7 @@ if SCHEDULE_MODE:
     agent2 = AgentModel(
         base_frame_position = baseframe2,
         home_position       = homepos2,
-        capabilities        = [CHUNK_2],
+        capabilities        = [0,1],
         velocity            = 50.0,
         travel_velocity     = 50.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe2),
@@ -90,7 +90,9 @@ if SCHEDULE_MODE:
         collision_gap_threshold=1.0,
     )
 
+    print()
     print("========== Start Scheduling ==========")
+    print("|")
 
     schedule = planner.plan(toolpath, graph, options)
 
@@ -101,10 +103,12 @@ if SCHEDULE_MODE:
             duration += event.duration
         print(f"| - {agent} execution time: {duration}")
 
+    print("|")
     print("========== Finish Scheduling =========")
+    print()
 
 
-#------------------- Visualize --------------------
+#------------------- Visualizing ------------------
 
 
 if SCHEDULE_MODE:
