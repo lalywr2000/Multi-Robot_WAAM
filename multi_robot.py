@@ -14,7 +14,7 @@ GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
-PREPROCESSING_MODE = True
+PREPROCESSING_MODE = False
 # True: preprocessing    False: skip preprocessing
 
 GCODE_PATH  = "./gcode/square.gcode"
@@ -131,5 +131,6 @@ if SCHEDULE_MODE:
     )
 
 else:
-    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
     visualize_toolpath_projection(toolpath)
+    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
+
