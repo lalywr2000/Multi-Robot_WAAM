@@ -10,7 +10,7 @@ from pyrobopath.toolpath.preprocessing import *
 
 MATERIAL = 1
 
-GCODE_MODE = False
+GCODE_MODE = True
 # True: gcode toolpath   False: manual toolpath
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
@@ -18,7 +18,7 @@ PREPROCESSING_MODE = True
 # True: preprocessing    False: skip preprocessing
 
 GCODE_PATH  = "./gcode/square.gcode"
-MANUAL_PATH = "./manual/test_1.txt"
+MANUAL_PATH = "./manual/test_0.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
