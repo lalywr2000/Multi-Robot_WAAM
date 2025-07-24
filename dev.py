@@ -264,13 +264,20 @@ if SCHEDULE_MODE:
                 continue
 
             ##################################################
-            ############### PRIORITY ALGORITHM ###############
+            ########## DISTANCE PRIORITY ALGORITHM ###########
+
+            agent_position = context.get_current_position(agent)
+            
+            # print(taskmanager.contours[0].path[0])
+
+            # key = lambda n: taskmanager.contours[n].path[0] 첫번째점
+            #                 taskmanager.contours[n].path[-1] 마지막점  <- CONTINUE HERE!!!
 
             key = lambda n: graph._graph.out_degree(n)
-            nodes = sorted(available, key=key, reverse=True)  # type: ignore
-            # → 이 부분을 closest point first 알고리즘으로 대체해야함
 
-            ############### PRIORITY ALGORITHM ###############
+            nodes = sorted(available, key=key)
+
+            ########## DISTANCE PRIORITY ALGORITHM ###########
             ##################################################
 
             all_collide_flag = True
