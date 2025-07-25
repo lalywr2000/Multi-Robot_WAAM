@@ -14,7 +14,7 @@ MATERIAL = 0
 
 GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
-PREPROCESSING_MODE = False
+PREPROCESSING_MODE = True
 # True: preprocessing    False: skip preprocessing
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
@@ -24,7 +24,7 @@ ALGORITHM_MODE = 1
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/cylinder.txt"
+MANUAL_PATH = "./manual/circle.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
@@ -228,6 +228,9 @@ if PREPROCESSING_MODE:
 
 schedule = None
 
+total_contour_cnt = len(toolpath.contours)
+scheduled_contour_cnt = 0
+
 if SCHEDULE_MODE:
     graph = create_dependency_graph_by_z(toolpath)
     options = PlanningOptions(
@@ -238,6 +241,7 @@ if SCHEDULE_MODE:
 
     print()
     print("========== Start Scheduling ==========")
+    print("|")
 
     required_tools = set(toolpath.tools())
     provided_tools = set(
@@ -326,6 +330,9 @@ if SCHEDULE_MODE:
                 context.positions[agent] = events[2].data[-1]
                 context.set_agent_start_time(agent, events[2].end)
 
+                scheduled_contour_cnt += 1
+                print(f"| Progress: {int(scheduled_contour_cnt / total_contour_cnt * 100)}%")
+
                 all_collide_flag = False
                 break
 
@@ -334,6 +341,7 @@ if SCHEDULE_MODE:
 
     print("|")
     print(f"| - Total duration: {schedule.duration()}")
+    print("|")
     for agent, sched in schedule.schedules.items():
         duration = 0.0
         for event in sched._events:
