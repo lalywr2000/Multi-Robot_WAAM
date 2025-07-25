@@ -16,7 +16,7 @@ GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
 PREPROCESSING_MODE = False
 # True: preprocessing    False: skip preprocessing
-SCHEDULE_MODE = False
+SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
 
 ALGORITHM_MODE = 1
@@ -24,7 +24,7 @@ ALGORITHM_MODE = 1
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/test_4.txt"
+MANUAL_PATH = "./manual/cylinder.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
