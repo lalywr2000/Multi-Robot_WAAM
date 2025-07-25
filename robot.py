@@ -14,16 +14,16 @@ MATERIAL = 0
 
 GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
-PREPROCESSING_MODE = True
+PREPROCESSING_MODE = False
 # True: preprocessing    False: skip preprocessing
-SCHEDULE_MODE = True
+SCHEDULE_MODE = False
 # True: scheduling       False: visualizing toolpath
 
 ALGORITHM_MODE = 1
 # 0: sequential
 # 1: distance priority
 
-GCODE_PATH  = "./gcode/square.gcode"
+GCODE_PATH  = "./gcode/multi_tool_square.gcode"
 MANUAL_PATH = "./manual/test_4.txt"
 
 ROBOT_COUNT        = 3      # int
