@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider
 from gcodeparser import GcodeParser
 from pyrobopath.toolpath import Contour, Toolpath, visualize_toolpath, visualize_toolpath_projection
 from pyrobopath.toolpath.preprocessing import LayerRangeStep
@@ -17,12 +19,12 @@ PREPROCESSING_MODE = True
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
 
-ALGORITHM_MODE = 0
+ALGORITHM_MODE = 1
 # 0: sequential
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/square.gcode"
-MANUAL_PATH = "./manual/test_3.txt"
+MANUAL_PATH = "./manual/test_4.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
@@ -124,7 +126,7 @@ def build_event_chain(
     return [e_travel, e_contour, e_depart, e_home]
 
 
-def slice_home_event(self, home_event: MoveEvent, end_time: float):
+def slice_home_event(home_event: MoveEvent, end_time: float):
     new_traj = home_event.traj.slice(home_event.start, end_time)
     path = [p.data for p in new_traj.points]
     return MoveEvent(home_event.start, path, home_event.velocity)
@@ -229,7 +231,7 @@ schedule = None
 if SCHEDULE_MODE:
     graph = create_dependency_graph_by_z(toolpath)
     options = PlanningOptions(
-        retract_height=5.0,
+        retract_height=0.0,
         collision_offset=1.0,
         collision_gap_threshold=1.0,
     )
@@ -280,8 +282,8 @@ if SCHEDULE_MODE:
             if ALGORITHM_MODE == 1:
                 agent_position = context.get_current_position(agent)
 
-                key = lambda node: min(np.linalg.norm(agent_position - taskmanager.contours[node].path[0]),
-                                    np.linalg.norm(agent_position - taskmanager.contours[node].path[-1]))
+                key = lambda node: np.linalg.norm(agent_position - taskmanager.contours[node].path[0]) + \
+                                   np.linalg.norm(agent_position - taskmanager.contours[node].path[-1])
                 nodes = sorted(available, key=key)
 
                 for node in nodes:
@@ -314,9 +316,7 @@ if SCHEDULE_MODE:
                 if schedule[agent].end_time() > events[0].start:
                     prev_home_event = schedule[agent]._events.pop()
                     if prev_home_event.start != events[0].start:
-                        sliced_home = slice_home_event(
-                            prev_home_event, events[0].start
-                        )
+                        sliced_home = slice_home_event(prev_home_event, events[0].start)
                         schedule.add_event(sliced_home, agent)
 
                 schedule.add_events(events, agent)
@@ -352,6 +352,41 @@ if SCHEDULE_MODE:
     animate_multi_agent_toolpath_full(
         toolpath, schedule, agent_models, limits=((-550, 550), (-430, 250))
     )
+
+    x, y, z = [], [], []
+    for time in range(int(schedule.start_time()), int(schedule.end_time()) + 1):
+        for robot, homepos in zip(["robot1", "robot2", "robot3"], [homepos1, homepos2, homepos3]):
+            pos = schedule[robot].get_state(time, default=homepos)
+            x.append(pos[0])
+            y.append(pos[1])
+            z.append(pos[2])
+
+    fig = plt.figure(figsize=(13, 9))
+    ax = fig.add_subplot(111, projection='3d')
+    plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
+
+    sc = ax.scatter([x[:3]], [y[:3]], [z[:3]], c='r', s=30)
+
+    ax.set_title("WAAM Simulation")
+    ax.set_xlim(-300, 300)
+    ax.set_ylim(-300, 300)
+    ax.set_zlim(-1, 10)
+
+    ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])  # [left, bottom, width, height]
+    time_slider = Slider(ax_slider,
+                         'Time',
+                         int(schedule.start_time()),
+                         int(schedule.end_time()),
+                         valinit=int(schedule.start_time()),
+                         valstep=1)
+
+    def update(val):
+        time = time_slider.val
+        sc._offsets3d = (x[:3*(time+1)], y[:3*(time+1)], z[:3*(time+1)])
+        fig.canvas.draw_idle()
+
+    time_slider.on_changed(update)
+    plt.show()
 
 else:
     visualize_toolpath_projection(toolpath)
