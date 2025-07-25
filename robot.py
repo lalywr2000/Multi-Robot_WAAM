@@ -361,20 +361,37 @@ if SCHEDULE_MODE:
         toolpath, schedule, agent_models, limits=((-550, 550), (-430, 250))
     )
 
-    x, y, z = [], [], []
+    target1_x, target1_y, target1_z = [], [], []
+    target2_x, target2_y, target2_z = [], [], []
+    target3_x, target3_y, target3_z = [], [], []
+
     for time in range(int(schedule.start_time()), int(schedule.end_time()) + 1):
         for robot, homepos in zip(["robot1", "robot2", "robot3"], [homepos1, homepos2, homepos3]):
             pos = schedule[robot].get_state(time, default=homepos)
-            x.append(pos[0])
-            y.append(pos[1])
-            z.append(pos[2])
+
+            if robot == "robot1":
+                target1_x.append(pos[0])
+                target1_y.append(pos[1])
+                target1_z.append(pos[2])
+            if robot == "robot2":
+                target2_x.append(pos[0])
+                target2_y.append(pos[1])
+                target2_z.append(pos[2])
+            if robot == "robot3":
+                target3_x.append(pos[0])
+                target3_y.append(pos[1])
+                target3_z.append(pos[2])
 
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
 
-    sc = ax.scatter([x[:3]], [y[:3]], [z[:3]], c='r', s=30)
+    sc1 = ax.scatter([target1_x[0]], [target1_y[1]], [target1_z[2]], c='r', s=15, label='robot1', depthshade=False)
+    sc2 = ax.scatter([target2[0][0]], [target2[0][1]], [target2[0][2]], c='g', s=15, label='robot2', depthshade=False)
+    sc3 = ax.scatter([target3[0][0]], [target3[0][1]], [target3[0][2]], c='y', s=15, label='robot3', depthshade=False)
+    #### continue here!!
 
+    
     ax.set_title("WAAM Simulation")
     ax.set_xlim(-300, 300)
     ax.set_ylim(-300, 300)
@@ -390,7 +407,7 @@ if SCHEDULE_MODE:
 
     def update(val):
         time = time_slider.val
-        sc._offsets3d = (x[:3*(time+1)], y[:3*(time+1)], z[:3*(time+1)])
+        sc1._offsets3d = (*list(zip(target1[:time+1])))
         fig.canvas.draw_idle()
 
     time_slider.on_changed(update)
