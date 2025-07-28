@@ -175,21 +175,21 @@ if SCHEDULE_MODE:
                            0.0])                                                                 # robot1 z_pos
     homepos1   = np.array([ROBOT_HOMEPOS_R * np.cos(2 * np.pi * 1 / ROBOT_COUNT + np.pi / 6),
                            ROBOT_HOMEPOS_R * np.sin(2 * np.pi * 1 / ROBOT_COUNT + np.pi / 6),
-                           0.0])
+                           10.0])
 
     baseframe2 = np.array([ROBOT_BASEFRAME_R * np.cos(2 * np.pi * 3 / ROBOT_COUNT + np.pi / 6),  # robot2 x_pos
                            ROBOT_BASEFRAME_R * np.sin(2 * np.pi * 3 / ROBOT_COUNT + np.pi / 6),  # robot2 y_pos
                            0.0])                                                                 # robot2 z_pos
     homepos2   = np.array([ROBOT_HOMEPOS_R * np.cos(2 * np.pi * 3 / ROBOT_COUNT + np.pi / 6),
                            ROBOT_HOMEPOS_R * np.sin(2 * np.pi * 3 / ROBOT_COUNT + np.pi / 6),
-                           0.0])
+                           10.0])
     
     baseframe3 = np.array([ROBOT_BASEFRAME_R * np.cos(2 * np.pi * 2 / ROBOT_COUNT + np.pi / 6),  # robot3 x_pos
                            ROBOT_BASEFRAME_R * np.sin(2 * np.pi * 2 / ROBOT_COUNT + np.pi / 6),  # robot3 y_pos
                            0.0])                                                                 # robot3 z_pos
     homepos3   = np.array([ROBOT_HOMEPOS_R * np.cos(2 * np.pi * 2 / ROBOT_COUNT + np.pi / 6),
                            ROBOT_HOMEPOS_R * np.sin(2 * np.pi * 2 / ROBOT_COUNT + np.pi / 6),
-                           0.0])
+                           10.0])
 
     boundingbox = (150.0, 40.0, 100.0)
 
@@ -198,7 +198,7 @@ if SCHEDULE_MODE:
         home_position       = homepos1,
         capabilities        = [0,1],  # robot1 material
         velocity            = 1.0,
-        travel_velocity     = 5.0,
+        travel_velocity     = 3.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe1),
     )
     agent2 = AgentModel(
@@ -206,7 +206,7 @@ if SCHEDULE_MODE:
         home_position       = homepos2,
         capabilities        = [0,1],  # robot2 material
         velocity            = 1.0,
-        travel_velocity     = 5.0,
+        travel_velocity     = 3.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe2),
     )
     agent3 = AgentModel(
@@ -214,7 +214,7 @@ if SCHEDULE_MODE:
         home_position       = homepos3,
         capabilities        = [0,1],  # robot3 material
         velocity            = 1.0,
-        travel_velocity     = 5.0,
+        travel_velocity     = 3.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe3),
     )
     agent_models = {"robot1": agent1, "robot2": agent2, "robot3": agent3}
@@ -263,6 +263,8 @@ if SCHEDULE_MODE:
     taskmanager = TaskManager(toolpath, graph)
     taskmanager.frontier.update(graph.roots())
 
+    layer_cnt = 0
+
     while taskmanager.has_frontier():
         sorted_times = context.get_unique_start_times()
         time = sorted_times[0]
@@ -273,6 +275,22 @@ if SCHEDULE_MODE:
             tools = agent_models[agent].capabilities
             available = taskmanager.get_available_tasks()
             available = [c for c in available if taskmanager.contours[c].tool in tools]
+
+            # slice home event if layer completed
+            if schedule[agent].end_time() > events[0].start: ################# 레이어 끝나면 home 조금 갔다가 돌아오기
+                prev_home_event = schedule[agent]._events.pop()
+                if prev_home_event.start != events[0].start:
+                    sliced_home = slice_home_event(prev_home_event, events[0].start)
+                    schedule.add_event(sliced_home, agent)
+
+            # --------------
+            if available and layer_cnt != taskmanager.contours[available[0]].path[0][-1]:
+                if len(sorted_times) > 1:
+                    context.set_agent_start_time(agent, sorted_times[1])
+
+                layer_cnt += 1
+                continue
+            ########################## 레이어 끝나면 home 조금 갔다가 돌아오기
 
             reachable = []
 
