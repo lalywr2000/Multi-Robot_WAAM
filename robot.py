@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
+from matplotlib.lines import Line2D
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from gcodeparser import GcodeParser
 from pyrobopath.toolpath import Contour, Toolpath, visualize_toolpath, visualize_toolpath_projection
 from pyrobopath.toolpath.preprocessing import LayerRangeStep
@@ -24,7 +27,7 @@ ALGORITHM_MODE = 1
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/circle.txt"
+MANUAL_PATH = "./manual/cylinder.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
@@ -191,24 +194,24 @@ if SCHEDULE_MODE:
         base_frame_position = baseframe1,
         home_position       = homepos1,
         capabilities        = [0,1],  # robot1 material
-        velocity            = 10.0,
-        travel_velocity     = 50.0,
+        velocity            = 1.0,
+        travel_velocity     = 5.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe1),
     )
     agent2 = AgentModel(
         base_frame_position = baseframe2,
         home_position       = homepos2,
         capabilities        = [0,1],  # robot2 material
-        velocity            = 10.0,
-        travel_velocity     = 50.0,
+        velocity            = 1.0,
+        travel_velocity     = 5.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe2),
     )
     agent3 = AgentModel(
         base_frame_position = baseframe3,
         home_position       = homepos3,
         capabilities        = [0,1],  # robot3 material
-        velocity            = 10.0,
-        travel_velocity     = 50.0,
+        velocity            = 1.0,
+        travel_velocity     = 5.0,
         collision_model     = FCLRobotBBCollisionModel(boundingbox, baseframe3),
     )
     agent_models = {"robot1": agent1, "robot2": agent2, "robot3": agent3}
@@ -382,35 +385,175 @@ if SCHEDULE_MODE:
                 target3_y.append(pos[1])
                 target3_z.append(pos[2])
 
+    deposition1 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
+    deposition2 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
+    deposition3 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
+
+    for robot in ["robot1", "robot2", "robot3"]:
+        for event in schedule.schedules[robot]._events:
+            if isinstance(event, ContourEvent):
+                if robot == "robot1":
+                    for time in range(int(event.start)+1, int(event.end)+1):
+                        deposition1[time] = True
+                if robot == "robot2":
+                    for time in range(int(event.start)+1, int(event.end)+1):
+                        deposition2[time] = True
+                if robot == "robot3":
+                    for time in range(int(event.start)+1, int(event.end)+1):
+                        deposition3[time] = True
+
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
 
-    sc1 = ax.scatter([target1_x[0]], [target1_y[1]], [target1_z[2]], c='r', s=15, label='robot1', depthshade=False)
-    sc2 = ax.scatter([target2[0][0]], [target2[0][1]], [target2[0][2]], c='g', s=15, label='robot2', depthshade=False)
-    sc3 = ax.scatter([target3[0][0]], [target3[0][1]], [target3[0][2]], c='y', s=15, label='robot3', depthshade=False)
-    #### continue here!!
+    segments1, segments2, segments3 = [], [], []
+    colors1, colors2, colors3 = [], [], []
+    linewidths1, linewidths2, linewidths3 = [], [], []
 
+    segments1.append([[target1_x[0], target1_y[0], target1_z[0]], [target1_x[0], target1_y[0], target1_z[0]]])
+    segments2.append([[target2_x[0], target2_y[0], target2_z[0]], [target2_x[0], target2_y[0], target2_z[0]]])
+    segments3.append([[target3_x[0], target3_y[0], target3_z[0]], [target3_x[0], target3_y[0], target3_z[0]]])
+    colors1.append('red'   if deposition1[0] and deposition1[0] else 'gray')
+    colors2.append('green' if deposition2[0] and deposition2[0] else 'gray')
+    colors3.append('blue'  if deposition3[0] and deposition3[0] else 'gray')
+    linewidths1.append(3 if deposition1[0] and deposition1[0] else 1)
+    linewidths2.append(3 if deposition2[0] and deposition2[0] else 1)
+    linewidths3.append(3 if deposition3[0] and deposition3[0] else 1)
+
+    line_collection1 = Line3DCollection(segments1, colors=colors1, linewidths=linewidths1)
+    line_collection2 = Line3DCollection(segments2, colors=colors2, linewidths=linewidths2)
+    line_collection3 = Line3DCollection(segments3, colors=colors3, linewidths=linewidths3)
+
+    ax.add_collection3d(line_collection1)
+    ax.add_collection3d(line_collection2)
+    ax.add_collection3d(line_collection3)
+
+
+    def create_cylinder(center_x, center_y, center_z, color, r=5, h=1, resolution=20):
+        x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
+        y = r * np.sin(np.linspace(0, 2 * np.pi, resolution))
+        z_bottom = np.full_like(x, 0)
+        z_top = np.full_like(x, h)
+
+        verts = []
+        for i in range(resolution - 1):
+            verts.append([
+                [center_x + x[i],   center_y + y[i],   center_z + z_bottom[i]],
+                [center_x + x[i+1], center_y + y[i+1], center_z + z_bottom[i+1]],
+                [center_x + x[i+1], center_y + y[i+1], center_z + z_top[i+1]],
+                [center_x + x[i],   center_y + y[i],   center_z + z_top[i]],
+            ])
+
+        verts.append([[center_x + x[i], center_y + y[i], center_z + z_bottom[i]] for i in range(resolution)])
+        verts.append([[center_x + x[i], center_y + y[i], center_z + z_top[i]] for i in range(resolution)])
+
+        return Poly3DCollection(verts, facecolors=color, linewidths=0.5, alpha=0.2)
     
+
+    cylinder1 = create_cylinder(target1_x[0], target1_y[0], target1_z[0], 'red')
+    cylinder2 = create_cylinder(target2_x[0], target2_y[0], target2_z[0], 'green')
+    cylinder3 = create_cylinder(target3_x[0], target3_y[0], target3_z[0], 'blue')
+
+    ax.add_collection3d(cylinder1)
+    ax.add_collection3d(cylinder2)
+    ax.add_collection3d(cylinder3)
+
     ax.set_title("WAAM Simulation")
     ax.set_xlim(-300, 300)
     ax.set_ylim(-300, 300)
     ax.set_zlim(-1, 10)
 
-    ax_slider = plt.axes([0.2, 0.1, 0.6, 0.03])  # [left, bottom, width, height]
+    ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])  # [left, bottom, width, height]
     time_slider = Slider(ax_slider,
                          'Time',
                          int(schedule.start_time()),
                          int(schedule.end_time()),
                          valinit=int(schedule.start_time()),
                          valstep=1)
+    
+    ax_button = plt.axes([0.4, 0.05, 0.2, 0.05])
+    button = Button(ax_button, '▶ Play')
+    animating = False
+
+    legend_elements = [
+        Line2D([0], [0], color='red',   lw=3, label='robot1'),
+        Line2D([0], [0], color='green', lw=3, label='robot2'),
+        Line2D([0], [0], color='blue',  lw=3, label='robot3'),
+    ]
+    ax.legend(handles=legend_elements, loc='upper right')
+
 
     def update(val):
         time = time_slider.val
-        sc1._offsets3d = (*list(zip(target1[:time+1])))
+
+        segments1, segments2, segments3 = [], [], []
+        colors1, colors2, colors3 = [], [], []
+        linewidths1, linewidths2, linewidths3 = [], [], []
+
+        for i in range(time):
+            segments1.append([[target1_x[i], target1_y[i], target1_z[i]], [target1_x[i+1], target1_y[i+1], target1_z[i+1]]])
+            segments2.append([[target2_x[i], target2_y[i], target2_z[i]], [target2_x[i+1], target2_y[i+1], target2_z[i+1]]])
+            segments3.append([[target3_x[i], target3_y[i], target3_z[i]], [target3_x[i+1], target3_y[i+1], target3_z[i+1]]])
+            colors1.append('red'   if deposition1[i] and deposition1[i+1] else 'gray')
+            colors2.append('green' if deposition2[i] and deposition2[i+1] else 'gray')
+            colors3.append('blue'  if deposition3[i] and deposition3[i+1] else 'gray')
+            linewidths1.append(3 if deposition1[i] and deposition1[i+1] else 1)
+            linewidths2.append(3 if deposition2[i] and deposition2[i+1] else 1)
+            linewidths3.append(3 if deposition3[i] and deposition3[i+1] else 1)
+
+        line_collection1.set_segments(segments1)
+        line_collection2.set_segments(segments2)
+        line_collection3.set_segments(segments3)
+        line_collection1.set_color(colors1)
+        line_collection2.set_color(colors2)
+        line_collection3.set_color(colors3)
+        line_collection1.set_linewidth(linewidths1)
+        line_collection2.set_linewidth(linewidths2)
+        line_collection3.set_linewidth(linewidths3)
+
+        global cylinder1, cylinder2, cylinder3
+        cylinder1.remove()
+        cylinder2.remove()
+        cylinder3.remove()
+
+        cylinder1 = create_cylinder(target1_x[time], target1_y[time], target1_z[time], 'red')
+        cylinder2 = create_cylinder(target2_x[time], target2_y[time], target2_z[time], 'green')
+        cylinder3 = create_cylinder(target3_x[time], target3_y[time], target3_z[time], 'blue')
+
+        ax.add_collection3d(cylinder1)
+        ax.add_collection3d(cylinder2)
+        ax.add_collection3d(cylinder3)
+
         fig.canvas.draw_idle()
 
+
     time_slider.on_changed(update)
+
+
+    def advance_slider(timer_event):
+        if not animating:
+            return
+        
+        current = time_slider.val
+        max_val = time_slider.valmax
+        next_val = current + 1 if current < max_val else time_slider.valmin
+        time_slider.set_val(next_val)
+
+
+    timer = fig.canvas.new_timer(interval=100)
+    timer.add_callback(advance_slider, None)
+    timer.start()
+
+
+    def toggle_animation(event):
+        global animating
+        animating = not animating
+        button.label.set_text('■ Stop' if animating else '▶ Play')
+        fig.canvas.draw_idle()
+
+
+    button.on_clicked(toggle_animation)
+
     plt.show()
 
 else:
