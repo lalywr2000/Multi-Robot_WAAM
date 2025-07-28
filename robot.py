@@ -32,8 +32,11 @@ MANUAL_PATH = "./manual/cylinder.txt"
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
 ROBOT_HOMEPOS_R    = 250.0  # float
+ROBOT_REACHABLE_R  = 360.0  # float
 
-MAX_CONTOUR_LENGTH = 150.0  # float
+SUBSTRATE_SIZE     = 400.0  # float
+
+MAX_CONTOUR_LENGTH = 150.0   # float
 
 
 class SchedulingContext:
@@ -271,6 +274,40 @@ if SCHEDULE_MODE:
             available = taskmanager.get_available_tasks()
             available = [c for c in available if taskmanager.contours[c].tool in tools]
 
+            reachable = []
+
+            if agent == 'robot1':
+                for contour in available:
+                    for point in taskmanager.contours[contour].path:
+                        if np.linalg.norm(baseframe1 - point) < ROBOT_REACHABLE_R:
+                            pass
+                        else:
+                            break
+                    else:
+                        reachable.append(contour)
+            
+            if agent == 'robot2':
+                for contour in available:
+                    for point in taskmanager.contours[contour].path:
+                        if np.linalg.norm(baseframe2 - point) < ROBOT_REACHABLE_R:
+                            pass
+                        else:
+                            break
+                    else:
+                        reachable.append(contour)
+
+            if agent == 'robot3':
+                for contour in available:
+                    for point in taskmanager.contours[contour].path:
+                        if np.linalg.norm(baseframe3 - point) < ROBOT_REACHABLE_R:
+                            pass
+                        else:
+                            break
+                    else:
+                        reachable.append(contour)
+
+            available = reachable[:]
+
             if not available:
                 if len(sorted_times) > 1:
                     context.set_agent_start_time(agent, sorted_times[1])
@@ -406,6 +443,17 @@ if SCHEDULE_MODE:
     ax = fig.add_subplot(111, projection='3d')
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
 
+    sub_x = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_x
+    sub_y = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_y
+
+    vertices = [[[sub_x[0], sub_y[0], 0.0],
+                 [sub_x[1], sub_y[0], 0.0],
+                 [sub_x[1], sub_y[1], 0.0],
+                 [sub_x[0], sub_y[1], 0.0]]]
+
+    substrate = Poly3DCollection(vertices, facecolor='gray', linewidths=1.0, edgecolor='black', alpha=0.1)
+    ax.add_collection3d(substrate)
+
     segments1, segments2, segments3 = [], [], []
     colors1, colors2, colors3 = [], [], []
     linewidths1, linewidths2, linewidths3 = [], [], []
@@ -427,7 +475,6 @@ if SCHEDULE_MODE:
     ax.add_collection3d(line_collection1)
     ax.add_collection3d(line_collection2)
     ax.add_collection3d(line_collection3)
-
 
     def create_cylinder(center_x, center_y, center_z, color, r=5, h=1, resolution=20):
         x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
