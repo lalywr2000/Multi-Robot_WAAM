@@ -27,12 +27,13 @@ ALGORITHM_MODE = 1
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/cylinder.txt"
+MANUAL_PATH = "./manual/multi_square_pipe.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
 ROBOT_HOMEPOS_R    = 250.0  # float
 ROBOT_REACHABLE_R  = 360.0  # float
+ROBOT_REST_TIME    = 5.0    # float
 
 SUBSTRATE_SIZE     = 400.0  # float
 
@@ -237,6 +238,8 @@ schedule = None
 total_contour_cnt = len(toolpath.contours)
 scheduled_contour_cnt = 0
 
+layer_cnt = 0
+
 if SCHEDULE_MODE:
     graph = create_dependency_graph_by_z(toolpath)
     options = PlanningOptions(
@@ -263,8 +266,6 @@ if SCHEDULE_MODE:
     taskmanager = TaskManager(toolpath, graph)
     taskmanager.frontier.update(graph.roots())
 
-    layer_cnt = 0
-
     while taskmanager.has_frontier():
         sorted_times = context.get_unique_start_times()
         time = sorted_times[0]
@@ -276,21 +277,35 @@ if SCHEDULE_MODE:
             available = taskmanager.get_available_tasks()
             available = [c for c in available if taskmanager.contours[c].tool in tools]
 
-            # slice home event if layer completed
-            if schedule[agent].end_time() > events[0].start: ################# 레이어 끝나면 home 조금 갔다가 돌아오기
-                prev_home_event = schedule[agent]._events.pop()
-                if prev_home_event.start != events[0].start:
-                    sliced_home = slice_home_event(prev_home_event, events[0].start)
-                    schedule.add_event(sliced_home, agent)
-
-            # --------------
+            # rest event if layer completed
             if available and layer_cnt != taskmanager.contours[available[0]].path[0][-1]:
-                if len(sorted_times) > 1:
-                    context.set_agent_start_time(agent, sorted_times[1])
+                for robot in ["robot1", "robot2", "robot3"]:
+                    last_target = schedule[robot]._events[-1].data[-1]
+                    home_pos = agent_models[robot].home_position
+
+                    if np.allclose(last_target, home_pos):
+                        schedule[robot]._events.pop()
+
+                    current_pos = schedule[robot].get_state(time)
+                    rest_pos = np.array([home_pos[0], home_pos[1], layer_cnt+2])
+                    
+                    rest_event = MoveEvent(
+                        schedule[robot]._events[-1].end,
+                        [current_pos, rest_pos],
+                        agent_models[robot].travel_velocity,
+                    )
+                    schedule.add_event(rest_event, robot)
+
+                    context.positions[robot] = rest_pos
+                    context.set_agent_start_time(robot, rest_event.end)
+                
+                for robot in ["robot1", "robot2", "robot3"]:
+                    context.set_agent_start_time(robot, max(schedule['robot1'].end_time(),
+                                                            schedule['robot2'].end_time(),
+                                                            schedule['robot3'].end_time()) + ROBOT_REST_TIME)
 
                 layer_cnt += 1
-                continue
-            ########################## 레이어 끝나면 home 조금 갔다가 돌아오기
+                break
 
             reachable = []
 
@@ -494,6 +509,7 @@ if SCHEDULE_MODE:
     ax.add_collection3d(line_collection2)
     ax.add_collection3d(line_collection3)
 
+
     def create_cylinder(center_x, center_y, center_z, color, r=5, h=1, resolution=20):
         x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
         y = r * np.sin(np.linspace(0, 2 * np.pi, resolution))
@@ -550,21 +566,30 @@ if SCHEDULE_MODE:
 
     def update(val):
         time = time_slider.val
+        pretime = len(segments1)
 
-        segments1, segments2, segments3 = [], [], []
-        colors1, colors2, colors3 = [], [], []
-        linewidths1, linewidths2, linewidths3 = [], [], []
-
-        for i in range(time):
-            segments1.append([[target1_x[i], target1_y[i], target1_z[i]], [target1_x[i+1], target1_y[i+1], target1_z[i+1]]])
-            segments2.append([[target2_x[i], target2_y[i], target2_z[i]], [target2_x[i+1], target2_y[i+1], target2_z[i+1]]])
-            segments3.append([[target3_x[i], target3_y[i], target3_z[i]], [target3_x[i+1], target3_y[i+1], target3_z[i+1]]])
-            colors1.append('red'   if deposition1[i] and deposition1[i+1] else 'gray')
-            colors2.append('green' if deposition2[i] and deposition2[i+1] else 'gray')
-            colors3.append('blue'  if deposition3[i] and deposition3[i+1] else 'gray')
-            linewidths1.append(3 if deposition1[i] and deposition1[i+1] else 1)
-            linewidths2.append(3 if deposition2[i] and deposition2[i+1] else 1)
-            linewidths3.append(3 if deposition3[i] and deposition3[i+1] else 1)
+        if pretime < time:
+            for i in range(pretime, time):
+                segments1.append([[target1_x[i], target1_y[i], target1_z[i]], [target1_x[i+1], target1_y[i+1], target1_z[i+1]]])
+                segments2.append([[target2_x[i], target2_y[i], target2_z[i]], [target2_x[i+1], target2_y[i+1], target2_z[i+1]]])
+                segments3.append([[target3_x[i], target3_y[i], target3_z[i]], [target3_x[i+1], target3_y[i+1], target3_z[i+1]]])
+                colors1.append('red'   if deposition1[i] and deposition1[i+1] else 'gray')
+                colors2.append('green' if deposition2[i] and deposition2[i+1] else 'gray')
+                colors3.append('blue'  if deposition3[i] and deposition3[i+1] else 'gray')
+                linewidths1.append(3 if deposition1[i] and deposition1[i+1] else 0.5)
+                linewidths2.append(3 if deposition2[i] and deposition2[i+1] else 0.5)
+                linewidths3.append(3 if deposition3[i] and deposition3[i+1] else 0.5)
+        else:
+            for i in range(time, pretime):
+                segments1.pop()
+                segments2.pop()
+                segments3.pop()
+                colors1.pop()
+                colors2.pop()
+                colors3.pop()
+                linewidths1.pop()
+                linewidths2.pop()
+                linewidths3.pop()
 
         line_collection1.set_segments(segments1)
         line_collection2.set_segments(segments2)
