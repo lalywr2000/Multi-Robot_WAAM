@@ -27,17 +27,17 @@ ALGORITHM_MODE = 1
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/multi_square_pipe.txt"
+MANUAL_PATH = "./manual/symbol.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
 ROBOT_HOMEPOS_R    = 250.0  # float
-ROBOT_REACHABLE_R  = 360.0  # float
+ROBOT_REACHABLE_R  = 400.0  # float
 ROBOT_REST_TIME    = 5.0    # float
 
 SUBSTRATE_SIZE     = 400.0  # float
 
-MAX_CONTOUR_LENGTH = 150.0   # float
+MAX_CONTOUR_LENGTH = 200.0   # float
 
 
 class SchedulingContext:
