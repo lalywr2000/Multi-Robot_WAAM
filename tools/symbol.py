@@ -1,7 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 
-radius = 50
+radius = 70
 num_points = 24  # 6+6+6
 layer = 5
 separate = 2
@@ -11,20 +11,20 @@ xy_1q = []  # 1사분면만
 # 곡선 생성 (1사분면)
 for i in range(0, 6):
     theta = (2 * math.pi / num_points) * i
-    x = radius * math.cos(theta) + 100.0
+    x = radius * math.cos(theta) + 140.0
     y = radius * math.sin(theta)
     xy_1q.append((x, y))
 
 for i in range(18, 12, -1):
     theta = (2 * math.pi / num_points) * i
-    x = radius * math.cos(theta) + 100.0
-    y = radius * math.sin(theta) + 100.0
+    x = radius * math.cos(theta) + 140.0
+    y = radius * math.sin(theta) + 140.0
     xy_1q.append((x, y))
 
 for i in range(0, 6):
     theta = (2 * math.pi / num_points) * i
     x = radius * math.cos(theta)
-    y = radius * math.sin(theta) + 100.0
+    y = radius * math.sin(theta) + 140.0
     xy_1q.append((x, y))
 
 # 회전 함수 정의
