@@ -439,11 +439,11 @@ if SCHEDULE_MODE:
 
     with open("test_robot_1.txt", "w") as f1:
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
-            f1.write(f"{x} {y} {z} {int(d)}\n")
+            f1.write(f"{x+250} {y+250} {z*3+3} {int(d)}\n")
 
     with open("test_robot_2.txt", "w") as f2:
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
-            f2.write(f"{x} {y} {z} {int(d)}\n")
+            f2.write(f"{x+250} {y+250} {z*3+3} {int(d)}\n")
 
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
