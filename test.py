@@ -272,7 +272,7 @@ if SCHEDULE_MODE:
                         schedule[robot]._events.pop()
 
                     current_pos = schedule[robot].get_state(time)
-                    rest_pos = np.array([home_pos[0]/2, home_pos[1]/2, layer_cnt+2])
+                    rest_pos = np.array([home_pos[0], home_pos[1], home_pos[2]])
                     
                     rest_event = MoveEvent(
                         schedule[robot]._events[-1].end,
@@ -437,13 +437,50 @@ if SCHEDULE_MODE:
                     for time in range(int(event.start)+1, int(event.end)+1):
                         deposition2[time] = True
 
+
+
+
+
+
     with open("test_robot_1.txt", "w") as f1:
+        idx = 0
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
-            f1.write(f"{x+250} {y+250} {z*3+3} {int(d)}\n")
+            f1.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            idx += 1
+
+        for i, d in enumerate(deposition1):
+            if d:
+                f1.write(f"MoveL Target_{i+1},v300,z0,Weldgun1\WObj:=Workobject_1;\n")
+            else:
+                f1.write(f"MoveL Target_{i+1},v900,z0,Weldgun1\WObj:=Workobject_1;\n")
 
     with open("test_robot_2.txt", "w") as f2:
+        idx = 0
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
-            f2.write(f"{x+250} {y+250} {z*3+3} {int(d)}\n")
+            f2.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            idx += 1
+
+        for i, d in enumerate(deposition2):
+            if d:
+                f2.write(f"MoveL Target_{i+1},v300,z0,Weldgun2\WObj:=Workobject_2;\n")
+            else:
+                f2.write(f"MoveL Target_{i+1},v900,z0,Weldgun2\WObj:=Workobject_2;\n")
+
+
+
+
+
+
+        # layer = -1
+        # for i in range(idx):
+        #     if layer != int(target1_z[i]):
+        #         f1.write(f"WaitSyncTask sync1,all_tasks;\n")
+        #         f1.write(f"SyncMoveOn sync2,all_tasks;\n")
+        #         f1.write(f"mhome;\n")
+        #         f1.write(f"SyncMoveOff sync2;\n")
+        #         layer = int(target1_z[i])
+        #     f1.write(f"MoveL Target_{i+1},v1000,fine,Weldgun1\WObj:=Workobject_1;\n")
+        # try for every inst
 
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
