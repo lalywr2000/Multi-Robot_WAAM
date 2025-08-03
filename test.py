@@ -175,15 +175,15 @@ if SCHEDULE_MODE:
                            1150,  # robot1 y_pos
                            0.0])                                                                 # robot1 z_pos
     homepos1   = np.array([-600,
-                           500,
-                           10.0])
+                           0,
+                           30.0])
 
     baseframe2 = np.array([1250,  # robot2 x_pos
                            1150,  # robot2 y_pos
                            0.0])                                                                 # robot2 z_pos
     homepos2   = np.array([600,
-                           500,
-                           10.0])
+                           0,
+                           30.0])
 
     boundingbox = (1000.0, 400.0, 500.0)
 
@@ -442,34 +442,31 @@ if SCHEDULE_MODE:
 
 
 
-    with open("test_robot_1.txt", "w") as f1:
+    with open("ROB1_target.txt", "w") as f1:
         idx = 0
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
-            f1.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            f1.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0.383,0.924,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
             idx += 1
 
+    with open("ROB1_move.txt", "w") as f2:
         for i, d in enumerate(deposition1):
             if d:
-                f1.write(f"MoveL Target_{i+1},v300,z0,Weldgun1\WObj:=Workobject_1;\n")
+                f2.write(f"MoveL Target_{i+1},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
             else:
-                f1.write(f"MoveL Target_{i+1},v900,z0,Weldgun1\WObj:=Workobject_1;\n")
+                f2.write(f"MoveL Target_{i+1},v300,z0,Weldgun_1\WObj:=Workobject_1;\n")
 
-    with open("test_robot_2.txt", "w") as f2:
+    with open("ROB2_target.txt", "w") as f3:
         idx = 0
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
-            f2.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            f3.write(f"CONST robtarget Target_{idx+1}:=[[{x+250}, {y+250}, {z*3+3}],[0,0.924,0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
             idx += 1
-
+    
+    with open("ROB2_move.txt", "w") as f4:
         for i, d in enumerate(deposition2):
             if d:
-                f2.write(f"MoveL Target_{i+1},v300,z0,Weldgun2\WObj:=Workobject_2;\n")
+                f4.write(f"MoveL Target_{i+1},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
             else:
-                f2.write(f"MoveL Target_{i+1},v900,z0,Weldgun2\WObj:=Workobject_2;\n")
-
-
-
-
-
+                f4.write(f"MoveL Target_{i+1},v300,z0,Weldgun_2\WObj:=Workobject_2;\n")
 
         # layer = -1
         # for i in range(idx):
