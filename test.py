@@ -33,11 +33,13 @@ ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
 ROBOT_HOMEPOS_R    = 250.0  # float
 ROBOT_REACHABLE_R  = 5000.0 # float
-ROBOT_REST_TIME    = 1.0    # float
+ROBOT_REST_TIME    = 0.0    # float
 
 SUBSTRATE_SIZE     = 500.0  # float
 
 MAX_CONTOUR_LENGTH = 180.0  # float
+
+collect_time = []
 
 
 class SchedulingContext:
@@ -287,6 +289,9 @@ if SCHEDULE_MODE:
                 for robot in ["robot1", "robot2"]:
                     context.set_agent_start_time(robot, max(schedule['robot1'].end_time(),
                                                             schedule['robot2'].end_time()) + ROBOT_REST_TIME)
+                
+                collect_time.append(max(schedule['robot1'].end_time(),
+                                        schedule['robot2'].end_time()) + ROBOT_REST_TIME)
 
                 layer_cnt += 1
                 break
@@ -439,9 +444,6 @@ if SCHEDULE_MODE:
 
 
 
-
-
-
     with open("ROB1_target.txt", "w") as f1:
         idx = 0
         num = 1
@@ -453,7 +455,15 @@ if SCHEDULE_MODE:
 
     with open("ROB1_move.txt", "w") as f2:
         num = 1
+        collect_time_idx = 0
         for i, d in enumerate(deposition1):
+            if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
+                f2.write(f"WaitSyncTask sync1,all_tasks;\n")
+                f2.write(f"SyncMoveOn sync2,all_tasks;\n")
+                f2.write(f"mhome;\n")
+                f2.write(f"SyncMoveOff sync2;\n")
+                collect_time_idx += 1
+            
             if i % 2 == 0:
                 continue
             if d:
@@ -473,7 +483,15 @@ if SCHEDULE_MODE:
     
     with open("ROB2_move.txt", "w") as f4:
         num = 1
+        collect_time_idx = 0
         for i, d in enumerate(deposition2):
+            if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
+                f4.write(f"WaitSyncTask sync1,all_tasks;\n")
+                f4.write(f"SyncMoveOn sync2,all_tasks;\n")
+                f4.write(f"mhome;\n")
+                f4.write(f"SyncMoveOff sync2;\n")
+                collect_time_idx += 1
+
             if i % 2 == 0:
                 continue
             if d:
@@ -483,16 +501,6 @@ if SCHEDULE_MODE:
             num += 1
 
 
-        # layer = -1
-        # for i in range(idx):
-        #     if layer != int(target1_z[i]):
-        #         f1.write(f"WaitSyncTask sync1,all_tasks;\n")
-        #         f1.write(f"SyncMoveOn sync2,all_tasks;\n")
-        #         f1.write(f"mhome;\n")
-        #         f1.write(f"SyncMoveOff sync2;\n")
-        #         layer = int(target1_z[i])
-        #     f1.write(f"MoveL Target_{i+1},v1000,fine,Weldgun1\WObj:=Workobject_1;\n")
-        # try for every inst
 
     fig = plt.figure(figsize=(13, 9))
     ax = fig.add_subplot(111, projection='3d')
