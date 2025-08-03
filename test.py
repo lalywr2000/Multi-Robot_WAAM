@@ -17,17 +17,17 @@ MATERIAL = 0
 
 GCODE_MODE = False
 # True: gcode toolpath   False: manual toolpath
-PREPROCESSING_MODE = True
+PREPROCESSING_MODE = False
 # True: preprocessing    False: skip preprocessing
 SCHEDULE_MODE = True
 # True: scheduling       False: visualizing toolpath
 
-ALGORITHM_MODE = 1
+ALGORITHM_MODE = 0
 # 0: sequential
 # 1: distance priority
 
 GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/symbol.txt"
+MANUAL_PATH = "./manual/nozzle.txt"
 
 ROBOT_COUNT        = 3      # int
 ROBOT_BASEFRAME_R  = 350.0  # float
@@ -178,16 +178,16 @@ if SCHEDULE_MODE:
                            0.0])                                                                 # robot1 z_pos
     homepos1   = np.array([-300,
                            300,
-                           30.0])
+                           600.0])
 
     baseframe2 = np.array([1250,  # robot2 x_pos
                            1150,  # robot2 y_pos
                            0.0])                                                                 # robot2 z_pos
     homepos2   = np.array([300,
                            300,
-                           30.0])
+                           600.0])
 
-    boundingbox = (1000.0, 400.0, 500.0)
+    boundingbox = (2000.0, 300.0, 500.0)
 
     agent1 = AgentModel(
         base_frame_position = baseframe1,
@@ -231,7 +231,7 @@ if SCHEDULE_MODE:
     graph = create_dependency_graph_by_z(toolpath)
     options = PlanningOptions(
         retract_height=0.0,
-        collision_offset=1.0,
+        collision_offset=10.0,  # scheduling speed
         collision_gap_threshold=1.0,
     )
 
@@ -293,7 +293,7 @@ if SCHEDULE_MODE:
                 collect_time.append(max(schedule['robot1'].end_time(),
                                         schedule['robot2'].end_time()) + ROBOT_REST_TIME)
 
-                layer_cnt += 1
+                layer_cnt += 3
                 break
 
             reachable = []
@@ -449,7 +449,7 @@ if SCHEDULE_MODE:
         num = 1
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
             if idx % 2 == 0:
-                f1.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z*3+3}],[0,0.383,0.924,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                f1.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0.383,0.924,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 
@@ -477,7 +477,7 @@ if SCHEDULE_MODE:
         num = 1
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
             if idx % 2 == 0:
-                f3.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z*3+3}],[0,0.924,0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                f3.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0.924,0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
     
@@ -565,7 +565,7 @@ if SCHEDULE_MODE:
     ax.set_title("WAAM Simulation")
     ax.set_xlim(-300, 300)
     ax.set_ylim(-300, 300)
-    ax.set_zlim(-1, 10)
+    ax.set_zlim(-50, 550)
 
     ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])  # [left, bottom, width, height]
     time_slider = Slider(ax_slider,
