@@ -7,7 +7,7 @@ twist = 0
 
 
 with open("/home/ha/kamic/manual/nozzle.txt", "w") as file:
-    for z in range(0, 13, 3):
+    for z in range(0, 500, 3):
         r = math.sqrt(40000 - 60*z)
 
         temp = []

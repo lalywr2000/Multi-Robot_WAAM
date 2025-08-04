@@ -478,7 +478,7 @@ if SCHEDULE_MODE:
                     f2.write(f"MoveL Target_{num},v300,fine,Weldgun_1\WObj:=Workobject_1;\n")
 
                 if prepos is not None and np.allclose(prepos, agent_models['robot1'].home_position):
-                    f2.write(f"WaitTime \\InPos,0.5;\n")    
+                    f2.write(f"WaitTime \\InPos,0.01;\n")    
             else:
                 if d:
                     f2.write(f"MoveL Target_{num},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
@@ -519,7 +519,7 @@ if SCHEDULE_MODE:
                     f4.write(f"MoveL Target_{num},v300,fine,Weldgun_2\WObj:=Workobject_2;\n")
 
                 if prepos is not None and np.allclose(prepos, agent_models['robot2'].home_position):
-                    f4.write(f"WaitTime \\InPos,0.5;\n")    
+                    f4.write(f"WaitTime \\InPos,0.01;\n")    
             else:
                 if d:
                     f4.write(f"MoveL Target_{num},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
