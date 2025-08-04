@@ -36,18 +36,3 @@ with open("/home/ha/kamic/manual/nozzle.txt", "w") as file:
         if twist == 2:
             twist = -1
 
-
-# 전체 4사분면 구성
-# xy_full = []
-# for k in range(4):
-#     rotated = rotate_points(xy_1q, 90 * k)
-#     xy_full.extend(rotated)
-
-# for i in range(layer):
-#     xy_full = xy_full[separate:] + xy_full[:separate]
-
-#     for x, y in xy_full:
-#         print(f"{round(x, 6)} {round(y, 6)} {i}.0")
-#     print(f"{round(xy_full[0][0], 6)} {round(xy_full[0][1], 6)} {i}.0")
-#     print()
-

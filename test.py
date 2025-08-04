@@ -413,6 +413,8 @@ if SCHEDULE_MODE:
         toolpath, schedule, agent_models, limits=((-1500, 1500), (-350, 1250))
     )
 
+    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
+
     target1_x, target1_y, target1_z = [], [], []
     target2_x, target2_y, target2_z = [], [], []
 
@@ -449,13 +451,15 @@ if SCHEDULE_MODE:
         num = 1
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
             if idx % 2 == 0:
-                f1.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0.383,0.924,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                f1.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 
     with open("ROB1_move.txt", "w") as f2:
         num = 1
         collect_time_idx = 0
+        prepos = None
+
         for i, d in enumerate(deposition1):
             if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
                 f2.write(f"WaitSyncTask sync1,all_tasks;\n")
@@ -463,27 +467,40 @@ if SCHEDULE_MODE:
                 f2.write(f"mhome;\n")
                 f2.write(f"SyncMoveOff sync2;\n")
                 collect_time_idx += 1
-            
-            if i % 2 == 0:
+
+            if i % 2 == 1:
                 continue
-            if d:
-                f2.write(f"MoveL Target_{num},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
+
+            curpos = np.array([target1_x[i], target1_y[i], target1_z[i]])
+
+            if np.allclose(curpos, agent_models['robot1'].home_position):
+                if prepos is None or not np.allclose(prepos, agent_models['robot1'].home_position):
+                    f2.write(f"MoveL Target_{num},v300,fine,Weldgun_1\WObj:=Workobject_1;\n")
+
+                if prepos is not None and np.allclose(prepos, agent_models['robot1'].home_position):
+                    f2.write(f"WaitTime \\InPos,0.5;\n")    
             else:
-                f2.write(f"MoveL Target_{num},v300,z0,Weldgun_1\WObj:=Workobject_1;\n")
+                if d:
+                    f2.write(f"MoveL Target_{num},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
+                else:
+                    f2.write(f"MoveL Target_{num},v300,z0,Weldgun_1\WObj:=Workobject_1;\n")
             num += 1
+            prepos = curpos
 
     with open("ROB2_target.txt", "w") as f3:
         idx = 0
         num = 1
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
             if idx % 2 == 0:
-                f3.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0.924,0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                f3.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
     
     with open("ROB2_move.txt", "w") as f4:
         num = 1
         collect_time_idx = 0
+        prepos = None
+
         for i, d in enumerate(deposition2):
             if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
                 f4.write(f"WaitSyncTask sync1,all_tasks;\n")
@@ -492,13 +509,24 @@ if SCHEDULE_MODE:
                 f4.write(f"SyncMoveOff sync2;\n")
                 collect_time_idx += 1
 
-            if i % 2 == 0:
+            if i % 2 == 1:
                 continue
-            if d:
-                f4.write(f"MoveL Target_{num},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
+
+            curpos = np.array([target2_x[i], target2_y[i], target2_z[i]])
+
+            if np.allclose(curpos, agent_models['robot2'].home_position):
+                if prepos is None or not np.allclose(prepos, agent_models['robot2'].home_position):
+                    f4.write(f"MoveL Target_{num},v300,fine,Weldgun_2\WObj:=Workobject_2;\n")
+
+                if prepos is not None and np.allclose(prepos, agent_models['robot2'].home_position):
+                    f4.write(f"WaitTime \\InPos,0.5;\n")    
             else:
-                f4.write(f"MoveL Target_{num},v300,z0,Weldgun_2\WObj:=Workobject_2;\n")
+                if d:
+                    f4.write(f"MoveL Target_{num},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
+                else:
+                    f4.write(f"MoveL Target_{num},v300,z0,Weldgun_2\WObj:=Workobject_2;\n")
             num += 1
+            prepos = curpos
 
 
 
@@ -535,7 +563,7 @@ if SCHEDULE_MODE:
     ax.add_collection3d(line_collection2)
 
 
-    def create_cylinder(center_x, center_y, center_z, color, r=5, h=1, resolution=20):
+    def create_cylinder(center_x, center_y, center_z, color, r=5, h=50, resolution=20):
         x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
         y = r * np.sin(np.linspace(0, 2 * np.pi, resolution))
         z_bottom = np.full_like(x, 0)
