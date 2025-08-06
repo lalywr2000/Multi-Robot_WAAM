@@ -1,45 +1,42 @@
 import numpy as np
+
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 from gcodeparser import GcodeParser
-from pyrobopath.toolpath import Contour, Toolpath, visualize_toolpath, visualize_toolpath_projection
-from pyrobopath.toolpath.preprocessing import LayerRangeStep
+
+from pyrobopath.toolpath_scheduling import ContourEvent, MoveEvent, MultiAgentToolpathSchedule, PlanningOptions, events_cause_collision, animate_multi_agent_toolpath_full
+from pyrobopath.toolpath import Contour, Toolpath, visualize_toolpath
+from pyrobopath.toolpath.preprocessing import *
 from pyrobopath.process import AgentModel, DependencyGraph, create_dependency_graph_by_z
 from pyrobopath.collision_detection import FCLRobotBBCollisionModel
-from pyrobopath.toolpath_scheduling import ContourEvent, MoveEvent, MultiAgentToolpathSchedule, PlanningOptions, events_cause_collision, animate_multi_agent_toolpath_full
-from pyrobopath.toolpath.preprocessing import *
 
-
-MATERIAL = 0
 
 GCODE_MODE = False
-# True: gcode toolpath   False: manual toolpath
+# True: input gcode path   # False: input manual path
 PREPROCESSING_MODE = True
-# True: preprocessing    False: skip preprocessing
-SCHEDULE_MODE = True
-# True: scheduling       False: visualizing toolpath
+# True: preprocessing      # False: skip preprocessing
+SCHEDULING_MODE = True
+# True: scheduling         # False: visualizing
 
 ALGORITHM_MODE = 1
 # 0: sequential
 # 1: distance priority
 
-GCODE_PATH  = "./gcode/multi_tool_square.gcode"
-MANUAL_PATH = "./manual/block.txt"
+GCODE_PATH  = "./path/gcode/square.gcode"
+MANUAL_PATH = "./path/manual/puzzle.txt"
 
-ROBOT_COUNT        = 3      # int
-ROBOT_BASEFRAME_R  = 350.0  # float
-ROBOT_HOMEPOS_R    = 250.0  # float
 ROBOT_REACHABLE_R  = 2500.0 # float
 ROBOT_REST_TIME    = 0.0    # float
-
 SUBSTRATE_SIZE     = 500.0  # float
-
 MAX_CONTOUR_LENGTH = 300.0  # float
 
-collect_time = []
+
+#------ Base Implementation from Pyrobopath -------
+#--- https://github.com/alexarbogast/pyrobopath ---
 
 
 class SchedulingContext:
@@ -151,7 +148,7 @@ if GCODE_MODE:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
-    LayerRangeStep(0, 1).apply(toolpath)  # Extract the first layer
+    LayerRangeStep(0, 1).apply(toolpath)  # Extracting first layer
 
 else:
     path = []
@@ -162,7 +159,7 @@ else:
                 point = np.array(list(map(float, line.split())))
                 path.append(point)
             else:
-                contour.append(Contour(path, tool=MATERIAL))
+                contour.append(Contour(path))
                 path = []
     toolpath = Toolpath(contour)
 
@@ -172,13 +169,9 @@ else:
 
 agent_models = None
 
-if SCHEDULE_MODE:
-    baseframe1 = np.array([-1250,  # robot1 x_pos
-                           1150,  # robot1 y_pos
-                           0.0])                                                                 # robot1 z_pos
-    homepos1   = np.array([-300,
-                           300,
-                           600.0])
+if SCHEDULING_MODE:
+    baseframe1 = np.array([-1250, 1150, 0])  # robot1 pos
+    homepos1   = np.array([-300, 300, 600])
 
     baseframe2 = np.array([1250,  # robot2 x_pos
                            1150,  # robot2 y_pos
@@ -241,6 +234,7 @@ total_contour_cnt = len(toolpath.contours)
 scheduled_contour_cnt = 0
 
 layer_cnt = 0
+collect_time = []
 
 if SCHEDULE_MODE:
     graph = create_dependency_graph_by_z(toolpath)
@@ -782,6 +776,5 @@ if SCHEDULE_MODE:
     plt.show()
 
 else:
-    visualize_toolpath_projection(toolpath)
     visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
 
