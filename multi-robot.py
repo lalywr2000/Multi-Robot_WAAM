@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -635,7 +637,10 @@ if SCHEDULING_MODE:
 
 
 if SCHEDULING_MODE:
-    with open("ROB1_target.txt", "w") as file:
+    rapid_gen_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rapid_gen')
+
+    file_path = os.path.join(rapid_gen_dir, "ROB1_target.txt")
+    with open(file_path, "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
@@ -644,7 +649,8 @@ if SCHEDULING_MODE:
                 num += 1
             idx += 1
 
-    with open("ROB1_move.txt", "w") as file:
+    file_path = os.path.join(rapid_gen_dir, "ROB1_move.txt")
+    with open(file_path, "w") as file:
         num = 1
         timestamp_idx = 0
         prepos = None
@@ -680,7 +686,8 @@ if SCHEDULING_MODE:
 
     print("| - RAPID: ROB1 generated")
 
-    with open("ROB2_target.txt", "w") as file:
+    file_path = os.path.join(rapid_gen_dir, "ROB2_target.txt")
+    with open(file_path, "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
@@ -689,7 +696,8 @@ if SCHEDULING_MODE:
                 num += 1
             idx += 1
 
-    with open("ROB2_move.txt", "w") as file:
+    file_path = os.path.join(rapid_gen_dir, "ROB2_move.txt")
+    with open(file_path, "w") as file:
         num = 1
         timestamp_idx = 0
         prepos = None
@@ -725,7 +733,8 @@ if SCHEDULING_MODE:
 
     print("| - RAPID: ROB2 generated")
 
-    with open("ROB3_target.txt", "w") as file:
+    file_path = os.path.join(rapid_gen_dir, "ROB3_target.txt")
+    with open(file_path, "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target3_x, target3_y, target3_z, deposition3):
@@ -734,7 +743,8 @@ if SCHEDULING_MODE:
                 num += 1
             idx += 1
 
-    with open("ROB3_move.txt", "w") as file:
+    file_path = os.path.join(rapid_gen_dir, "ROB3_move.txt")
+    with open(file_path, "w") as file:
         num = 1
         timestamp_idx = 0
         prepos = None
@@ -772,3 +782,4 @@ if SCHEDULING_MODE:
     print("|")
     print("========== Finish Scheduling ===========")
     print()
+
