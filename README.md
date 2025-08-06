@@ -1,11 +1,89 @@
-# PiRacer Simulation with ROS2 and Gazebo
+# Multi-Robot Wire Arc Additive Manufacturing
 
 <div width="100%" align="center">
-    <img width="49%" src="/images/design.png">
-    <img width="49%" src="/images/model.png">
+    <img width="33%" src="/nozzle_sim.gif">
+    <img width="33%" src="/puzzle_sim.gif">
+    <img width="33%" src="/square_sim.gif">
 </div>
 
+<div width="100%" align="center">
+    <img width="33%" src="/nozzle_path.png">
+    <img width="33%" src="/puzzle_path.png">
+    <img width="33%" src="/square_path.png">
+</div>
+
+
+## Multi-Robot WAAM Path Planning
+Project Overview
+This project focuses on the development of a Multi-Robot Path Planning system for Wire Arc Additive Manufacturing (WAAM). The goal is to enhance the efficiency and scalability of WAAM by integrating multiple robotic arms for collaborative 3D printing tasks. This approach aims to increase the printable volume and parallel deposition capability, while ensuring the effective scheduling, collision avoidance, and synchronization of robots.
+
+## Key Features
+- Multi-Robot Coordination: The system supports multiple robotic arms working in parallel to deposit material, effectively increasing the build volume and speed.
+
+- Path Planning & Scheduling: Efficient scheduling algorithms are applied at the bead level for each robot. The system ensures proper robot placement, path collision avoidance, and accessibility range considerations.
+
+- Collision Detection: Collision detection is implemented by using bounding boxes to monitor interactions between robotic arms during the deposition process.
+
+- Real-Time Visualization: A visualization tool is integrated to provide real-time feedback on the deposition process, helping to optimize the workflow and ensure quality control.
+
+- Automatic Code Conversion: The system features automatic conversion of RAPID code for verification in ABB RobotStudio, allowing seamless integration with existing robot control systems.
+
+- Flexible Deposition Scenarios: The system can handle different deposition setups, including dual and triple-robot deposition configurations.
+
+## Benefits of Multi-Robot Systems in WAAM
+- Parallel Deposition Capability: Multiple robots working simultaneously can deposit material faster, significantly reducing production time.
+
+- Larger Printable Volume: The use of multiple robots increases the total build volume, allowing for the creation of larger parts.
+
+- Efficient Scheduling: By carefully coordinating the robots' actions, the system minimizes idle times and optimizes the overall manufacturing process.
+
+- Enhanced Flexibility: The system is adaptable to a variety of deposition scenarios, making it suitable for different manufacturing requirements.
+
+## Research Background
+This work is inspired by the research conducted by Oak Ridge National Laboratory (ORNL, USA), which demonstrated the potential of multi-robot-based WAAM systems. Their approach utilized a custom-developed path planning algorithm, and this project builds upon their successful implementation, adding new capabilities such as centralized task scheduling and advanced collision detection.
+
+## Development Progress
+- Scheduling & Path Planning: Algorithms are developed to schedule robot actions and plan paths based on the build structure, with careful consideration of cooling times (dwell) and robot accessibility.
+
+- Verification in RobotStudio: The system has been verified using ABB RobotStudio, where robot operations and collision detection were tested in virtual environments to ensure safe and accurate execution.
+
+- Real-World Testing
+The system has been tested in real-world scenarios, demonstrating its effectiveness in multi-robot synchronization and its ability to adapt to various deposition tasks, such as the creation of complex parts like rocket nozzles.
+
+## How to Use
+- Installation: The software is compatible with ABB RobotStudio for verification and simulation. Make sure to set up your robot system and integrate the provided code for path planning and scheduling.
+
+- Visualization: Use the built-in visualization tool to monitor the deposition process in real-time and adjust parameters as needed.
+
+## Future Work
+Further optimization of scheduling algorithms for even better efficiency.
+
+Expansion to handle more complex multi-robot setups.
+
+Continuous integration with new hardware and robotic systems.
+
+
+
+
+
+
+
+
+-
+-
+-
+-
+-
+-
+<div width="100%" align="center"><img src="/robotstudio_img.png" align="center" width="100%"></div>
+-
+-
+-
+-
+
 ---
+below contents are not related to this project, just for md format references
+
 
 This repository provides tools and examples for controlling and experimenting with **PiRacer model vehicle** in Gazebo. The Gazebo model, designed to match the hardware specifications of PiRacer, can be controlled via ROS2 topic communication. The included teleoperation example is a simple demonstration using the WASD keys on the keyboard, allowing simultaneous control of both the real PiRacer and the PiRacer in Gazebo.
 
