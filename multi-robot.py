@@ -149,7 +149,7 @@ if GCODE_MODE:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
-    LayerRangeStep(0, 1).apply(toolpath)  # extracting first layer
+    LayerRangeStep(0, 1).apply(toolpath)  # extracting the first layer
 
 else:
     path = []
@@ -237,7 +237,7 @@ if SCHEDULING_MODE:
     )
 
     print()
-    print("========== Start Scheduling ==========")
+    print("=========== Start Scheduling ===========")
     print("|")
 
     required_tools = set(toolpath.tools())
@@ -403,10 +403,7 @@ if SCHEDULING_MODE:
         for event in sched._events:
             duration += event.duration
         print(f"| - {agent} execution time: {duration}")
-
     print("|")
-    print("========== Finish Scheduling =========")
-    print()
 
 
 #------------------- Visualizing ------------------
@@ -531,7 +528,7 @@ if SCHEDULING_MODE:
     ax.set_ylim(-300, 300)
     ax.set_zlim(-50, 550)
 
-    ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])  # [left, bottom, width, height]
+    ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])
     time_slider = Slider(ax_slider,
                          'Time',
                          int(schedule.start_time()),
@@ -544,9 +541,9 @@ if SCHEDULING_MODE:
     animating = False
 
     legend_elements = [
-        Line2D([0], [0], color='red',   lw=3, label='robot1'), /////////
-        Line2D([0], [0], color='green', lw=3, label='robot2'),
-        Line2D([0], [0], color='blue',  lw=3, label='robot3'),
+        Line2D([0], [0], color='red',   lw=3, label="robot1"),
+        Line2D([0], [0], color='green', lw=3, label="robot2"),
+        Line2D([0], [0], color='blue',  lw=3, label="robot3"),
     ]
     ax.legend(handles=legend_elements, loc='upper right')
 
@@ -634,130 +631,144 @@ if SCHEDULING_MODE:
     plt.show()
 
 
+#------------- ABB RAPID Translation --------------
 
 
-
------translation
-
-    with open("ROB1_target.txt", "w") as f1:
+if SCHEDULING_MODE:
+    with open("ROB1_target.txt", "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
-            if idx % 2 == 0:
-                f1.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            if idx % 2 == 0:  # downsampling
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 
-    with open("ROB1_move.txt", "w") as f2:
+    with open("ROB1_move.txt", "w") as file:
         num = 1
-        collect_time_idx = 0
+        timestamp_idx = 0
         prepos = None
 
         for i, d in enumerate(deposition1):
-            if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
-                f2.write(f"WaitSyncTask sync1,all_tasks;\n")
-                f2.write(f"SyncMoveOn sync2,all_tasks;\n")
-                f2.write(f"mhome;\n")
-                f2.write(f"SyncMoveOff sync2;\n")
-                collect_time_idx += 1
+            if timestamp_idx < len(dwelling_timestamp) and i == int(dwelling_timestamp[timestamp_idx]) + 1:
+                file.write(f"WaitSyncTask sync1,all_tasks;\n")
+                file.write(f"SyncMoveOn sync2,all_tasks;\n")
+                file.write(f"mhome;\n")
+                file.write(f"SyncMoveOff sync2;\n")
+                timestamp_idx += 1
 
-            if i % 2 == 1:
+            if i % 2 == 1:  # downsampling
                 continue
 
             curpos = np.array([target1_x[i], target1_y[i], target1_z[i]])
 
-            if np.allclose(curpos, agent_models['robot1'].home_position):
-                if prepos is None or not np.allclose(prepos, agent_models['robot1'].home_position):
-                    f2.write(f"MoveL Target_{num},v300,fine,Weldgun_1\WObj:=Workobject_1;\n")
+            if np.allclose(curpos, agent_models["robot1"].home_position):
+                if prepos is None or not np.allclose(prepos, agent_models["robot1"].home_position):
+                    file.write(f"MoveL Target_{num},v300,fine,Weldgun_1\WObj:=Workobject_1;\n")
 
-                if prepos is not None and np.allclose(prepos, agent_models['robot1'].home_position):
-                    f2.write(f"WaitTime \\InPos,0.01;\n")    
+                if prepos is not None and np.allclose(prepos, agent_models["robot1"].home_position):
+                    file.write(f"WaitTime \\InPos,0.01;\n")
+            
             else:
                 if d:
-                    f2.write(f"MoveL Target_{num},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
+                    file.write(f"MoveL Target_{num},v100,z0,Weldgun_1\WObj:=Workobject_1;\n")
                 else:
-                    f2.write(f"MoveL Target_{num},v300,z0,Weldgun_1\WObj:=Workobject_1;\n")
+                    file.write(f"MoveL Target_{num},v300,z0,Weldgun_1\WObj:=Workobject_1;\n")
+            
             num += 1
             prepos = curpos
 
-    with open("ROB2_target.txt", "w") as f3:
+    print("| - RAPID: ROB1 generated")
+
+    with open("ROB2_target.txt", "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
-            if idx % 2 == 0:
-                f3.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            if idx % 2 == 0:  # downsampling
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
-    
-    with open("ROB2_move.txt", "w") as f4:
+
+    with open("ROB2_move.txt", "w") as file:
         num = 1
-        collect_time_idx = 0
+        timestamp_idx = 0
         prepos = None
 
         for i, d in enumerate(deposition2):
-            if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
-                f4.write(f"WaitSyncTask sync1,all_tasks;\n")
-                f4.write(f"SyncMoveOn sync2,all_tasks;\n")
-                f4.write(f"mhome;\n")
-                f4.write(f"SyncMoveOff sync2;\n")
-                collect_time_idx += 1
+            if timestamp_idx < len(dwelling_timestamp) and i == int(dwelling_timestamp[timestamp_idx]) + 1:
+                file.write(f"WaitSyncTask sync1,all_tasks;\n")
+                file.write(f"SyncMoveOn sync2,all_tasks;\n")
+                file.write(f"mhome;\n")
+                file.write(f"SyncMoveOff sync2;\n")
+                timestamp_idx += 1
 
-            if i % 2 == 1:
+            if i % 2 == 1:  # downsampling
                 continue
 
             curpos = np.array([target2_x[i], target2_y[i], target2_z[i]])
 
-            if np.allclose(curpos, agent_models['robot2'].home_position):
-                if prepos is None or not np.allclose(prepos, agent_models['robot2'].home_position):
-                    f4.write(f"MoveL Target_{num},v300,fine,Weldgun_2\WObj:=Workobject_2;\n")
+            if np.allclose(curpos, agent_models["robot2"].home_position):
+                if prepos is None or not np.allclose(prepos, agent_models["robot2"].home_position):
+                    file.write(f"MoveL Target_{num},v300,fine,Weldgun_2\WObj:=Workobject_2;\n")
 
-                if prepos is not None and np.allclose(prepos, agent_models['robot2'].home_position):
-                    f4.write(f"WaitTime \\InPos,0.01;\n")    
+                if prepos is not None and np.allclose(prepos, agent_models["robot2"].home_position):
+                    file.write(f"WaitTime \\InPos,0.01;\n")
+            
             else:
                 if d:
-                    f4.write(f"MoveL Target_{num},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
+                    file.write(f"MoveL Target_{num},v100,z0,Weldgun_2\WObj:=Workobject_2;\n")
                 else:
-                    f4.write(f"MoveL Target_{num},v300,z0,Weldgun_2\WObj:=Workobject_2;\n")
+                    file.write(f"MoveL Target_{num},v300,z0,Weldgun_2\WObj:=Workobject_2;\n")
+            
             num += 1
             prepos = curpos
 
-    with open("ROB3_target.txt", "w") as f5:
+    print("| - RAPID: ROB2 generated")
+
+    with open("ROB3_target.txt", "w") as file:
         idx = 0
         num = 1
         for x, y, z, d in zip(target3_x, target3_y, target3_z, deposition3):
-            if idx % 2 == 0:
-                f5.write(f"CONST robtarget Target_{num}:=[[{x+250}, {y+250}, {z+3}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+            if idx % 2 == 0:  # downsampling
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,0.924,-0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
-    
-    with open("ROB3_move.txt", "w") as f6:
+
+    with open("ROB3_move.txt", "w") as file:
         num = 1
-        collect_time_idx = 0
+        timestamp_idx = 0
         prepos = None
 
         for i, d in enumerate(deposition3):
-            if collect_time_idx < len(collect_time) and i == int(collect_time[collect_time_idx]) + 1:
-                f6.write(f"WaitSyncTask sync1,all_tasks;\n")
-                f6.write(f"SyncMoveOn sync2,all_tasks;\n")
-                f6.write(f"mhome;\n")
-                f6.write(f"SyncMoveOff sync2;\n")
-                collect_time_idx += 1
+            if timestamp_idx < len(dwelling_timestamp) and i == int(dwelling_timestamp[timestamp_idx]) + 1:
+                file.write(f"WaitSyncTask sync1,all_tasks;\n")
+                file.write(f"SyncMoveOn sync2,all_tasks;\n")
+                file.write(f"mhome;\n")
+                file.write(f"SyncMoveOff sync2;\n")
+                timestamp_idx += 1
 
-            if i % 2 == 1:
+            if i % 2 == 1:  # downsampling
                 continue
 
             curpos = np.array([target3_x[i], target3_y[i], target3_z[i]])
 
-            if np.allclose(curpos, agent_models['robot3'].home_position):
-                if prepos is None or not np.allclose(prepos, agent_models['robot3'].home_position):
-                    f6.write(f"MoveL Target_{num},v300,fine,Weldgun_3\WObj:=Workobject_3;\n")
+            if np.allclose(curpos, agent_models["robot3"].home_position):
+                if prepos is None or not np.allclose(prepos, agent_models["robot3"].home_position):
+                    file.write(f"MoveL Target_{num},v300,fine,Weldgun_3\WObj:=Workobject_3;\n")
 
-                if prepos is not None and np.allclose(prepos, agent_models['robot3'].home_position):
-                    f6.write(f"WaitTime \\InPos,0.01;\n")    
+                if prepos is not None and np.allclose(prepos, agent_models["robot3"].home_position):
+                    file.write(f"WaitTime \\InPos,0.01;\n")
+            
             else:
                 if d:
-                    f6.write(f"MoveL Target_{num},v100,z0,Weldgun_3\WObj:=Workobject_3;\n")
+                    file.write(f"MoveL Target_{num},v100,z0,Weldgun_3\WObj:=Workobject_3;\n")
                 else:
-                    f6.write(f"MoveL Target_{num},v300,z0,Weldgun_3\WObj:=Workobject_3;\n")
+                    file.write(f"MoveL Target_{num},v300,z0,Weldgun_3\WObj:=Workobject_3;\n")
+            
             num += 1
             prepos = curpos
+
+    print("| - RAPID: ROB3 generated")
+    print("|")
+    print("========== Finish Scheduling ===========")
+    print()
