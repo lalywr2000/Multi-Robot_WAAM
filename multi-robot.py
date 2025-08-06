@@ -29,10 +29,11 @@ ALGORITHM_MODE = 1
 GCODE_PATH  = "./path/gcode/square.gcode"
 MANUAL_PATH = "./path/manual/puzzle.txt"
 
-ROBOT_REACHABLE_R  = 2500.0 # float
-ROBOT_REST_TIME    = 0.0    # float
-SUBSTRATE_SIZE     = 500.0  # float
-MAX_CONTOUR_LENGTH = 300.0  # float
+ROBOT_REACHABLE_R  = 2500.0  # [mm]
+SUBSTRATE_SIZE     = 500.0   # [mm]
+MAX_CONTOUR_LENGTH = 300.0   # [mm]
+LAYER_THICKNESS    = 3.0     # [mm]
+DWELLING_TIME      = 0.0
 
 
 #------ Base Implementation from Pyrobopath -------
@@ -148,7 +149,7 @@ if GCODE_MODE:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
-    LayerRangeStep(0, 1).apply(toolpath)  # Extracting first layer
+    LayerRangeStep(0, 1).apply(toolpath)  # extracting first layer
 
 else:
     path = []
@@ -173,19 +174,11 @@ if SCHEDULING_MODE:
     baseframe1 = np.array([-1250, 1150, 0])  # robot1 pos
     homepos1   = np.array([-300, 300, 600])
 
-    baseframe2 = np.array([1250,  # robot2 x_pos
-                           1150,  # robot2 y_pos
-                           0.0])                                                                 # robot2 z_pos
-    homepos2   = np.array([300,
-                           300,
-                           600.0])
+    baseframe2 = np.array([1250, 1150, 0])   # robot2 pos
+    homepos2   = np.array([300, 300, 600])
     
-    baseframe3 = np.array([0,      # robot3 x_pos
-                           -1750,  # robot3 y_pos
-                           0.0])                                                                 # robot3 z_pos
-    homepos3   = np.array([0,
-                           -425,
-                           600.0])
+    baseframe3 = np.array([0, -1750, 0])     # robot3 pos
+    homepos3   = np.array([0, -425, 600])
 
     boundingbox = (2000.0, 300.0, 500.0)
 
@@ -216,7 +209,7 @@ if SCHEDULING_MODE:
     agent_models = {"robot1": agent1, "robot2": agent2, "robot3": agent3}
 
 
-#------------------ Preprocessing -----------------
+#----------------- Preprocessing ------------------
 
 
 if PREPROCESSING_MODE:
@@ -233,15 +226,14 @@ schedule = None
 total_contour_cnt = len(toolpath.contours)
 scheduled_contour_cnt = 0
 
-layer_cnt = 0
-collect_time = []
+layer_height = 0.0
+dwelling_timestamp = []
 
-if SCHEDULE_MODE:
+if SCHEDULING_MODE:
     graph = create_dependency_graph_by_z(toolpath)
     options = PlanningOptions(
         retract_height=0.0,
-        collision_offset=10.0,  # scheduling speed
-        collision_gap_threshold=1.0,
+        collision_offset=10.0,  # scheduling time step
     )
 
     print()
@@ -257,7 +249,6 @@ if SCHEDULE_MODE:
 
     schedule = MultiAgentToolpathSchedule()
     schedule.add_agents(agent_models.keys())
-
     context = SchedulingContext(agent_models, options)
     taskmanager = TaskManager(toolpath, graph)
     taskmanager.frontier.update(graph.roots())
@@ -273,74 +264,66 @@ if SCHEDULE_MODE:
             available = taskmanager.get_available_tasks()
             available = [c for c in available if taskmanager.contours[c].tool in tools]
 
-            # rest event if layer completed
-            if available and layer_cnt != taskmanager.contours[available[0]].path[0][-1]:
+            # dwelling event if layer completed
+            if available and layer_height != taskmanager.contours[available[0]].path[0][-1]:
                 for robot in ["robot1", "robot2", "robot3"]:
                     last_target = schedule[robot]._events[-1].data[-1]
                     home_pos = agent_models[robot].home_position
+                    current_pos = schedule[robot].get_state(time)
 
                     if np.allclose(last_target, home_pos):
                         schedule[robot]._events.pop()
 
-                    current_pos = schedule[robot].get_state(time)
-                    rest_pos = np.array([home_pos[0], home_pos[1], home_pos[2]])
-                    
-                    rest_event = MoveEvent(
+                    dwelling_event = MoveEvent(
                         schedule[robot]._events[-1].end,
-                        [current_pos, rest_pos],
+                        [current_pos, home_pos],
                         agent_models[robot].travel_velocity,
                     )
-                    schedule.add_event(rest_event, robot)
 
-                    context.positions[robot] = rest_pos
-                    context.set_agent_start_time(robot, rest_event.end)
+                    schedule.add_event(dwelling_event, robot)
+                    context.positions[robot] = home_pos
+                    context.set_agent_start_time(robot, dwelling_event.end)
                 
                 for robot in ["robot1", "robot2", "robot3"]:
-                    context.set_agent_start_time(robot, max(schedule['robot1'].end_time(),
-                                                            schedule['robot2'].end_time(),
-                                                            schedule['robot3'].end_time()) + ROBOT_REST_TIME)
+                    context.set_agent_start_time(robot, max(schedule["robot1"].end_time(),
+                                                            schedule["robot2"].end_time(),
+                                                            schedule["robot3"].end_time()) + DWELLING_TIME)
                 
-                collect_time.append(max(schedule['robot1'].end_time(),
-                                        schedule['robot2'].end_time(),
-                                        schedule['robot3'].end_time()) + ROBOT_REST_TIME)
+                dwelling_timestamp.append(max(schedule["robot1"].end_time(),
+                                              schedule["robot2"].end_time(),
+                                              schedule["robot3"].end_time()) + DWELLING_TIME)
 
-                layer_cnt += 3
+                layer_height += LAYER_THICKNESS
                 break
 
             reachable = []
 
-            if agent == 'robot1':
+            if agent == "robot1":
                 for contour in available:
                     for point in taskmanager.contours[contour].path:
-                        if np.linalg.norm(baseframe1 - point) < ROBOT_REACHABLE_R:
-                            pass
-                        else:
+                        if not np.linalg.norm(baseframe1 - point) < ROBOT_REACHABLE_R:
                             break
                     else:
                         reachable.append(contour)
             
-            if agent == 'robot2':
+            if agent == "robot2":
                 for contour in available:
                     for point in taskmanager.contours[contour].path:
-                        if np.linalg.norm(baseframe2 - point) < ROBOT_REACHABLE_R:
-                            pass
-                        else:
+                        if not np.linalg.norm(baseframe2 - point) < ROBOT_REACHABLE_R:
                             break
                     else:
                         reachable.append(contour)
 
-            if agent == 'robot3':
+            if agent == "robot3":
                 for contour in available:
                     for point in taskmanager.contours[contour].path:
-                        if np.linalg.norm(baseframe3 - point) < ROBOT_REACHABLE_R:
-                            pass
-                        else:
+                        if not np.linalg.norm(baseframe3 - point) < ROBOT_REACHABLE_R:
                             break
                     else:
                         reachable.append(contour)
 
             available = reachable[:]
-
+            ------------------------------------------
             if not available:
                 if len(sorted_times) > 1:
                     context.set_agent_start_time(agent, sorted_times[1])
