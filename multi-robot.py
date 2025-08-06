@@ -152,7 +152,7 @@ if GCODE_MODE:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
-    LayerRangeStep(0, 2).apply(toolpath)  # extracting the first layer
+    LayerRangeStep(0, 1).apply(toolpath)  # extracting the first layer
 
 else:
     path = []
