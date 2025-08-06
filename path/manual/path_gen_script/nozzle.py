@@ -6,8 +6,8 @@ num_points = 24
 twist = 0
 
 
-with open("/home/ha/kamic/manual/nozzle.txt", "w") as file:
-    for z in range(0, 50, 3):
+with open("/home/ha/kamic/path/manual/nozzle.txt", "w") as file:
+    for z in range(0, 500, 3):
         r = math.sqrt(40000 - 60*z)
 
         temp = []
@@ -23,7 +23,7 @@ with open("/home/ha/kamic/manual/nozzle.txt", "w") as file:
 
         for i in range(num_points):
             file.write(f"{temp[i][0]} {temp[i][1]} {temp[i][2]}\n")
-            if i == num_points // 2 + twist:
+            if i == (num_points // 3) * 1 + twist or i == (num_points // 3) * 2 + twist:
                 file.write(f"\n")
                 file.write(f"{temp[i][0]} {temp[i][1]} {temp[i][2]}\n")
         

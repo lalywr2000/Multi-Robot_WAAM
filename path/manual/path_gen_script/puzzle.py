@@ -3,7 +3,7 @@ import math
 
 twist = 0
 
-with open("/home/ha/kamic/manual/block.txt", "w") as file:
+with open("/home/ha/kamic/path/manual/puzzle.txt", "w") as file:
     for layer in range(0, 50, 3):
         temp = []
 
