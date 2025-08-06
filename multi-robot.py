@@ -34,7 +34,6 @@ MANUAL_PATH = "./path/manual/puzzle.txt"
 ROBOT_REACHABLE_R  = 2500.0  # [mm]
 SUBSTRATE_SIZE     = 500.0   # [mm]
 MAX_CONTOUR_LENGTH = 300.0   # [mm]
-LAYER_THICKNESS    = 3.0     # [mm]
 DWELLING_TIME      = 0.0
 
 
@@ -145,13 +144,15 @@ def slice_home_event(home_event: MoveEvent, end_time: float):
 
 
 toolpath = None
+layer_height = None
+layer_thickness = None
 
 if GCODE_MODE:
     with open(GCODE_PATH, "r") as f:
         gcode = f.read()
     parsed_gcode = GcodeParser(gcode)
     toolpath = Toolpath.from_gcode(parsed_gcode.lines)
-    LayerRangeStep(0, 1).apply(toolpath)  # extracting the first layer
+    LayerRangeStep(0, 2).apply(toolpath)  # extracting the first layer
 
 else:
     path = []
@@ -165,6 +166,13 @@ else:
                 contour.append(Contour(path))
                 path = []
     toolpath = Toolpath(contour)
+
+z_pos_data = set()
+for contour in toolpath.contours:
+    z_pos_data.add(float(contour.path[0][-1]))
+
+layer_height = min(z_pos_data)
+layer_thickness = min(z_pos_data)
 
 
 #------------------ Agent Models ------------------
@@ -228,7 +236,6 @@ schedule = None
 total_contour_cnt = len(toolpath.contours)
 scheduled_contour_cnt = 0
 
-layer_height = 0.0
 dwelling_timestamp = []
 
 if SCHEDULING_MODE:
@@ -269,23 +276,24 @@ if SCHEDULING_MODE:
             # dwelling event if layer completed
             if available and layer_height != taskmanager.contours[available[0]].path[0][-1]:
                 for robot in ["robot1", "robot2", "robot3"]:
-                    last_target = schedule[robot]._events[-1].data[-1]
-                    home_pos = agent_models[robot].home_position
+                    if schedule[robot]._events:
+                        last_target = schedule[robot]._events[-1].data[-1]
+                        home_pos = agent_models[robot].home_position
 
-                    if np.allclose(last_target, home_pos):
-                        schedule[robot]._events.pop()
+                        if np.allclose(last_target, home_pos):
+                            schedule[robot]._events.pop()
 
-                    current_pos = schedule[robot].get_state(time)
+                        current_pos = schedule[robot].get_state(time)
 
-                    dwelling_event = MoveEvent(
-                        schedule[robot]._events[-1].end,
-                        [current_pos, home_pos],
-                        agent_models[robot].travel_velocity,
-                    )
+                        dwelling_event = MoveEvent(
+                            schedule[robot]._events[-1].end,
+                            [current_pos, home_pos],
+                            agent_models[robot].travel_velocity,
+                        )
 
-                    schedule.add_event(dwelling_event, robot)
-                    context.positions[robot] = home_pos
-                    context.set_agent_start_time(robot, dwelling_event.end)
+                        schedule.add_event(dwelling_event, robot)
+                        context.positions[robot] = home_pos
+                        context.set_agent_start_time(robot, dwelling_event.end)
                 
                 for robot in ["robot1", "robot2", "robot3"]:
                     context.set_agent_start_time(robot, max(schedule["robot1"].end_time(),
@@ -296,7 +304,7 @@ if SCHEDULING_MODE:
                                               schedule["robot2"].end_time(),
                                               schedule["robot3"].end_time()) + DWELLING_TIME)
 
-                layer_height += LAYER_THICKNESS
+                layer_height += layer_thickness
                 break
 
             reachable = []
@@ -646,7 +654,7 @@ if SCHEDULING_MODE:
         num = 1
         for x, y, z, d in zip(target1_x, target1_y, target1_z, deposition1):
             if idx % 2 == 0:  # downsampling
-                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z}],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 
@@ -693,7 +701,7 @@ if SCHEDULING_MODE:
         num = 1
         for x, y, z, d in zip(target2_x, target2_y, target2_z, deposition2):
             if idx % 2 == 0:  # downsampling
-                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z}],[0,1,0,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 
@@ -740,7 +748,7 @@ if SCHEDULING_MODE:
         num = 1
         for x, y, z, d in zip(target3_x, target3_y, target3_z, deposition3):
             if idx % 2 == 0:  # downsampling
-                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z+LAYER_THICKNESS}],[0,0.924,-0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
+                file.write(f"CONST robtarget Target_{num}:=[[{x+SUBSTRATE_SIZE/2}, {y+SUBSTRATE_SIZE/2}, {z}],[0,0.924,-0.383,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];\n")
                 num += 1
             idx += 1
 

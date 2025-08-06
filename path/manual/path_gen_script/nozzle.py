@@ -8,7 +8,7 @@ circle_sampling_cnt = 24
 avoidance = 0
 
 with open(file_path, "w") as file:
-    for z in range(0, 500, 3):
+    for z in range(3, 500, 3):
         r = math.sqrt(40000 - 60*z)
 
         temp = []

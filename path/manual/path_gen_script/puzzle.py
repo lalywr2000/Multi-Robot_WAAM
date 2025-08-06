@@ -15,7 +15,7 @@ def rotate_points(points, angle_deg):
 
 
 with open(file_path, "w") as file:
-    for z in range(0, 50, 3):
+    for z in range(3, 50, 3):
         temp = []
 
         temp.append((200, 40))
