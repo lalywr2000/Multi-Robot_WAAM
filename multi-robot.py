@@ -323,21 +323,21 @@ if SCHEDULING_MODE:
                         reachable.append(contour)
 
             available = reachable[:]
-            ------------------------------------------
+
             if not available:
                 if len(sorted_times) > 1:
                     context.set_agent_start_time(agent, sorted_times[1])
                 continue
 
             ##################################################
-            ############## SEQUENTIAL ALGORITHM ##############
+            ############# ALGORITHM: SEQUENTIAL ##############
 
             if ALGORITHM_MODE == 0:
                 key = lambda node: graph._graph.out_degree(node)
                 nodes = sorted(available, key=key, reverse=True)
 
             ##################################################
-            ########## DISTANCE PRIORITY ALGORITHM ###########
+            ########## ALGORITHM: DISTANCE PRIORITY ##########
 
             if ALGORITHM_MODE == 1:
                 agent_position = context.get_current_position(agent)
@@ -412,16 +412,16 @@ if SCHEDULING_MODE:
 #------------------- Visualizing ------------------
 
 
-if SCHEDULE_MODE:
+visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
+
+if SCHEDULING_MODE:
     animate_multi_agent_toolpath_full(
         toolpath, schedule, agent_models, limits=((-1500, 1500), (-1850, 1250))
     )
 
-    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
-
-    target1_x, target1_y, target1_z = [], [], []
-    target2_x, target2_y, target2_z = [], [], []
-    target3_x, target3_y, target3_z = [], [], []
+    target1_x, target1_y, target1_z = [], [], []  # sampling robot1 target points
+    target2_x, target2_y, target2_z = [], [], []  # sampling robot2 target points
+    target3_x, target3_y, target3_z = [], [], []  # sampling robot3 target points
 
     for time in range(int(schedule.start_time()), int(schedule.end_time()) + 1):
         for robot, homepos in zip(["robot1", "robot2", "robot3"], [homepos1, homepos2, homepos3]):
@@ -443,6 +443,7 @@ if SCHEDULE_MODE:
     deposition1 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
     deposition2 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
     deposition3 = [False for _ in range(int(schedule.start_time()), int(schedule.end_time()) + 1)]
+    # True: deposition on   # False: deposition off
 
     for robot in ["robot1", "robot2", "robot3"]:
         for event in schedule.schedules[robot]._events:
@@ -457,7 +458,186 @@ if SCHEDULE_MODE:
                     for time in range(int(event.start)+1, int(event.end)+1):
                         deposition3[time] = True
 
+    fig = plt.figure(figsize=(13, 9))
+    ax = fig.add_subplot(111, projection='3d')
+    plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
 
+    sub_x = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_x
+    sub_y = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_y
+
+    vertices = [[[sub_x[0], sub_y[0], 0.0],
+                 [sub_x[1], sub_y[0], 0.0],
+                 [sub_x[1], sub_y[1], 0.0],
+                 [sub_x[0], sub_y[1], 0.0],]]
+
+    substrate = Poly3DCollection(vertices, facecolor='gray', linewidths=1.0, edgecolor='black', alpha=0.1)
+    ax.add_collection3d(substrate)
+
+    # TCP tracing lines
+    segments1,   segments2,   segments3   = [], [], []
+    colors1,     colors2,     colors3     = [], [], []
+    linewidths1, linewidths2, linewidths3 = [], [], []
+
+    segments1.append([[target1_x[0], target1_y[0], target1_z[0]], [target1_x[0], target1_y[0], target1_z[0]]])
+    segments2.append([[target2_x[0], target2_y[0], target2_z[0]], [target2_x[0], target2_y[0], target2_z[0]]])
+    segments3.append([[target3_x[0], target3_y[0], target3_z[0]], [target3_x[0], target3_y[0], target3_z[0]]])
+    colors1.append('red'   if deposition1[0] and deposition1[0] else 'gray')
+    colors2.append('green' if deposition2[0] and deposition2[0] else 'gray')
+    colors3.append('blue'  if deposition3[0] and deposition3[0] else 'gray')
+    linewidths1.append(3 if deposition1[0] and deposition1[0] else 1)
+    linewidths2.append(3 if deposition2[0] and deposition2[0] else 1)
+    linewidths3.append(3 if deposition3[0] and deposition3[0] else 1)
+
+    line_collection1 = Line3DCollection(segments1, colors=colors1, linewidths=linewidths1)
+    line_collection2 = Line3DCollection(segments2, colors=colors2, linewidths=linewidths2)
+    line_collection3 = Line3DCollection(segments3, colors=colors3, linewidths=linewidths3)
+
+    ax.add_collection3d(line_collection1)
+    ax.add_collection3d(line_collection2)
+    ax.add_collection3d(line_collection3)
+
+
+    def create_cylinder(center_x, center_y, center_z, color, r=5, h=50, resolution=20):
+        x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
+        y = r * np.sin(np.linspace(0, 2 * np.pi, resolution))
+        z_bottom = np.full_like(x, 0)
+        z_top = np.full_like(x, h)
+
+        verts = []
+        for i in range(resolution - 1):
+            verts.append([
+                [center_x + x[i],   center_y + y[i],   center_z + z_bottom[i]],
+                [center_x + x[i+1], center_y + y[i+1], center_z + z_bottom[i+1]],
+                [center_x + x[i+1], center_y + y[i+1], center_z + z_top[i+1]],
+                [center_x + x[i],   center_y + y[i],   center_z + z_top[i]],
+            ])
+
+        verts.append([[center_x + x[i], center_y + y[i], center_z + z_bottom[i]] for i in range(resolution)])
+        verts.append([[center_x + x[i], center_y + y[i], center_z + z_top[i]] for i in range(resolution)])
+
+        return Poly3DCollection(verts, facecolors=color, linewidths=0.5, alpha=0.2)
+    
+
+    cylinder1 = create_cylinder(target1_x[0], target1_y[0], target1_z[0], 'red')
+    cylinder2 = create_cylinder(target2_x[0], target2_y[0], target2_z[0], 'green')
+    cylinder3 = create_cylinder(target3_x[0], target3_y[0], target3_z[0], 'blue')
+
+    ax.add_collection3d(cylinder1)
+    ax.add_collection3d(cylinder2)
+    ax.add_collection3d(cylinder3)
+
+    ax.set_title("Multi-Robot WAAM Simulation")
+    ax.set_xlim(-300, 300)
+    ax.set_ylim(-300, 300)
+    ax.set_zlim(-50, 550)
+
+    ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])  # [left, bottom, width, height]
+    time_slider = Slider(ax_slider,
+                         'Time',
+                         int(schedule.start_time()),
+                         int(schedule.end_time()),
+                         valinit=int(schedule.start_time()),
+                         valstep=1)
+    
+    ax_button = plt.axes([0.4, 0.05, 0.2, 0.05])
+    button = Button(ax_button, '▶ Play')
+    animating = False
+
+    legend_elements = [
+        Line2D([0], [0], color='red',   lw=3, label='robot1'), /////////
+        Line2D([0], [0], color='green', lw=3, label='robot2'),
+        Line2D([0], [0], color='blue',  lw=3, label='robot3'),
+    ]
+    ax.legend(handles=legend_elements, loc='upper right')
+
+
+    def update(val):
+        time = time_slider.val
+        pretime = len(segments1)
+
+        if pretime < time:
+            for i in range(pretime, time):
+                segments1.append([[target1_x[i], target1_y[i], target1_z[i]], [target1_x[i+1], target1_y[i+1], target1_z[i+1]]])
+                segments2.append([[target2_x[i], target2_y[i], target2_z[i]], [target2_x[i+1], target2_y[i+1], target2_z[i+1]]])
+                segments3.append([[target3_x[i], target3_y[i], target3_z[i]], [target3_x[i+1], target3_y[i+1], target3_z[i+1]]])
+                colors1.append('red'   if deposition1[i] and deposition1[i+1] else 'gray')
+                colors2.append('green' if deposition2[i] and deposition2[i+1] else 'gray')
+                colors3.append('blue'  if deposition3[i] and deposition3[i+1] else 'gray')
+                linewidths1.append(3 if deposition1[i] and deposition1[i+1] else 0.5)
+                linewidths2.append(3 if deposition2[i] and deposition2[i+1] else 0.5)
+                linewidths3.append(3 if deposition3[i] and deposition3[i+1] else 0.5)
+        else:
+            for i in range(time, pretime):
+                segments1.pop()
+                segments2.pop()
+                segments3.pop()
+                colors1.pop()
+                colors2.pop()
+                colors3.pop()
+                linewidths1.pop()
+                linewidths2.pop()
+                linewidths3.pop()
+
+        line_collection1.set_segments(segments1)
+        line_collection2.set_segments(segments2)
+        line_collection3.set_segments(segments3)
+        line_collection1.set_color(colors1)
+        line_collection2.set_color(colors2)
+        line_collection3.set_color(colors3)
+        line_collection1.set_linewidth(linewidths1)
+        line_collection2.set_linewidth(linewidths2)
+        line_collection3.set_linewidth(linewidths3)
+
+        global cylinder1, cylinder2, cylinder3
+        cylinder1.remove()
+        cylinder2.remove()
+        cylinder3.remove()
+
+        cylinder1 = create_cylinder(target1_x[time], target1_y[time], target1_z[time], 'red')
+        cylinder2 = create_cylinder(target2_x[time], target2_y[time], target2_z[time], 'green')
+        cylinder3 = create_cylinder(target3_x[time], target3_y[time], target3_z[time], 'blue')
+
+        ax.add_collection3d(cylinder1)
+        ax.add_collection3d(cylinder2)
+        ax.add_collection3d(cylinder3)
+
+        fig.canvas.draw_idle()
+
+
+    time_slider.on_changed(update)
+
+
+    def advance_slider(timer_event):
+        if not animating:
+            return
+        
+        current = time_slider.val
+        max_val = time_slider.valmax
+        next_val = current + 10 if current < max_val else time_slider.valmin
+        time_slider.set_val(next_val)
+
+
+    timer = fig.canvas.new_timer(interval=100)
+    timer.add_callback(advance_slider, None)
+    timer.start()
+
+
+    def toggle_animation(event):
+        global animating
+        animating = not animating
+        button.label.set_text('■ Stop' if animating else '▶ Play')
+        fig.canvas.draw_idle()
+
+
+    button.on_clicked(toggle_animation)
+
+    plt.show()
+
+
+
+
+
+-----translation
 
     with open("ROB1_target.txt", "w") as f1:
         idx = 0
@@ -581,183 +761,3 @@ if SCHEDULE_MODE:
                     f6.write(f"MoveL Target_{num},v300,z0,Weldgun_3\WObj:=Workobject_3;\n")
             num += 1
             prepos = curpos
-
-
-
-    fig = plt.figure(figsize=(13, 9))
-    ax = fig.add_subplot(111, projection='3d')
-    plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.2)
-
-    sub_x = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_x
-    sub_y = [SUBSTRATE_SIZE * -0.5, SUBSTRATE_SIZE * 0.5]  # substrate_y
-
-    vertices = [[[sub_x[0], sub_y[0], 0.0],
-                 [sub_x[1], sub_y[0], 0.0],
-                 [sub_x[1], sub_y[1], 0.0],
-                 [sub_x[0], sub_y[1], 0.0]]]
-
-    substrate = Poly3DCollection(vertices, facecolor='gray', linewidths=1.0, edgecolor='black', alpha=0.1)
-    ax.add_collection3d(substrate)
-
-    segments1, segments2, segments3 = [], [], []
-    colors1, colors2, colors3 = [], [], []
-    linewidths1, linewidths2, linewidths3 = [], [], []
-
-    segments1.append([[target1_x[0], target1_y[0], target1_z[0]], [target1_x[0], target1_y[0], target1_z[0]]])
-    segments2.append([[target2_x[0], target2_y[0], target2_z[0]], [target2_x[0], target2_y[0], target2_z[0]]])
-    segments3.append([[target3_x[0], target3_y[0], target3_z[0]], [target3_x[0], target3_y[0], target3_z[0]]])
-    colors1.append('red'   if deposition1[0] and deposition1[0] else 'gray')
-    colors2.append('green' if deposition2[0] and deposition2[0] else 'gray')
-    colors3.append('blue'  if deposition3[0] and deposition3[0] else 'gray')
-    linewidths1.append(3 if deposition1[0] and deposition1[0] else 1)
-    linewidths2.append(3 if deposition2[0] and deposition2[0] else 1)
-    linewidths3.append(3 if deposition3[0] and deposition3[0] else 1)
-
-    line_collection1 = Line3DCollection(segments1, colors=colors1, linewidths=linewidths1)
-    line_collection2 = Line3DCollection(segments2, colors=colors2, linewidths=linewidths2)
-    line_collection3 = Line3DCollection(segments3, colors=colors3, linewidths=linewidths3)
-
-    ax.add_collection3d(line_collection1)
-    ax.add_collection3d(line_collection2)
-    ax.add_collection3d(line_collection3)
-
-
-    def create_cylinder(center_x, center_y, center_z, color, r=5, h=50, resolution=20):
-        x = r * np.cos(np.linspace(0, 2 * np.pi, resolution))
-        y = r * np.sin(np.linspace(0, 2 * np.pi, resolution))
-        z_bottom = np.full_like(x, 0)
-        z_top = np.full_like(x, h)
-
-        verts = []
-        for i in range(resolution - 1):
-            verts.append([
-                [center_x + x[i],   center_y + y[i],   center_z + z_bottom[i]],
-                [center_x + x[i+1], center_y + y[i+1], center_z + z_bottom[i+1]],
-                [center_x + x[i+1], center_y + y[i+1], center_z + z_top[i+1]],
-                [center_x + x[i],   center_y + y[i],   center_z + z_top[i]],
-            ])
-
-        verts.append([[center_x + x[i], center_y + y[i], center_z + z_bottom[i]] for i in range(resolution)])
-        verts.append([[center_x + x[i], center_y + y[i], center_z + z_top[i]] for i in range(resolution)])
-
-        return Poly3DCollection(verts, facecolors=color, linewidths=0.5, alpha=0.2)
-    
-
-    cylinder1 = create_cylinder(target1_x[0], target1_y[0], target1_z[0], 'red')
-    cylinder2 = create_cylinder(target2_x[0], target2_y[0], target2_z[0], 'green')
-    cylinder3 = create_cylinder(target3_x[0], target3_y[0], target3_z[0], 'blue')
-
-    ax.add_collection3d(cylinder1)
-    ax.add_collection3d(cylinder2)
-    ax.add_collection3d(cylinder3)
-
-    ax.set_title("WAAM Simulation")
-    ax.set_xlim(-300, 300)
-    ax.set_ylim(-300, 300)
-    ax.set_zlim(-50, 550)
-
-    ax_slider = plt.axes([0.2, 0.13, 0.6, 0.03])  # [left, bottom, width, height]
-    time_slider = Slider(ax_slider,
-                         'Time',
-                         int(schedule.start_time()),
-                         int(schedule.end_time()),
-                         valinit=int(schedule.start_time()),
-                         valstep=1)
-    
-    ax_button = plt.axes([0.4, 0.05, 0.2, 0.05])
-    button = Button(ax_button, '▶ Play')
-    animating = False
-
-    legend_elements = [
-        Line2D([0], [0], color='red',   lw=3, label='robot1'),
-        Line2D([0], [0], color='green', lw=3, label='robot2'),
-        Line2D([0], [0], color='blue',  lw=3, label='robot3'),
-    ]
-    ax.legend(handles=legend_elements, loc='upper right')
-
-
-    def update(val):
-        time = time_slider.val
-        pretime = len(segments1)
-
-        if pretime < time:
-            for i in range(pretime, time):
-                segments1.append([[target1_x[i], target1_y[i], target1_z[i]], [target1_x[i+1], target1_y[i+1], target1_z[i+1]]])
-                segments2.append([[target2_x[i], target2_y[i], target2_z[i]], [target2_x[i+1], target2_y[i+1], target2_z[i+1]]])
-                segments3.append([[target3_x[i], target3_y[i], target3_z[i]], [target3_x[i+1], target3_y[i+1], target3_z[i+1]]])
-                colors1.append('red'   if deposition1[i] and deposition1[i+1] else 'gray')
-                colors2.append('green' if deposition2[i] and deposition2[i+1] else 'gray')
-                colors3.append('blue'  if deposition3[i] and deposition3[i+1] else 'gray')
-                linewidths1.append(3 if deposition1[i] and deposition1[i+1] else 0.5)
-                linewidths2.append(3 if deposition2[i] and deposition2[i+1] else 0.5)
-                linewidths3.append(3 if deposition3[i] and deposition3[i+1] else 0.5)
-        else:
-            for i in range(time, pretime):
-                segments1.pop()
-                segments2.pop()
-                segments3.pop()
-                colors1.pop()
-                colors2.pop()
-                colors3.pop()
-                linewidths1.pop()
-                linewidths2.pop()
-                linewidths3.pop()
-
-        line_collection1.set_segments(segments1)
-        line_collection2.set_segments(segments2)
-        line_collection3.set_segments(segments3)
-        line_collection1.set_color(colors1)
-        line_collection2.set_color(colors2)
-        line_collection3.set_color(colors3)
-        line_collection1.set_linewidth(linewidths1)
-        line_collection2.set_linewidth(linewidths2)
-        line_collection3.set_linewidth(linewidths3)
-
-        global cylinder1, cylinder2, cylinder3
-        cylinder1.remove()
-        cylinder2.remove()
-        cylinder3.remove()
-
-        cylinder1 = create_cylinder(target1_x[time], target1_y[time], target1_z[time], 'red')
-        cylinder2 = create_cylinder(target2_x[time], target2_y[time], target2_z[time], 'green')
-        cylinder3 = create_cylinder(target3_x[time], target3_y[time], target3_z[time], 'blue')
-
-        ax.add_collection3d(cylinder1)
-        ax.add_collection3d(cylinder2)
-        ax.add_collection3d(cylinder3)
-
-        fig.canvas.draw_idle()
-
-
-    time_slider.on_changed(update)
-
-
-    def advance_slider(timer_event):
-        if not animating:
-            return
-        
-        current = time_slider.val
-        max_val = time_slider.valmax
-        next_val = current + 10 if current < max_val else time_slider.valmin
-        time_slider.set_val(next_val)
-
-
-    timer = fig.canvas.new_timer(interval=100)
-    timer.add_callback(advance_slider, None)
-    timer.start()
-
-
-    def toggle_animation(event):
-        global animating
-        animating = not animating
-        button.label.set_text('■ Stop' if animating else '▶ Play')
-        fig.canvas.draw_idle()
-
-
-    button.on_clicked(toggle_animation)
-
-    plt.show()
-
-else:
-    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
-
