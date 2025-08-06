@@ -1,4 +1,4 @@
-# Multi-Robot Wire Arc Additive Manufacturing
+# Multi-Robot WAAM Path Planning
 
 <div width="100%" align="center">
     <img width="32%" src="/nozzle_sim.gif">
