@@ -440,7 +440,7 @@ if SCHEDULE_MODE:
         toolpath, schedule, agent_models, limits=((-1500, 1500), (-1850, 1250))
     )
 
-    # visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
+    visualize_toolpath(toolpath, backend="matplotlib", color_method="tool")
 
     target1_x, target1_y, target1_z = [], [], []
     target2_x, target2_y, target2_z = [], [], []
