@@ -684,7 +684,7 @@ if SCHEDULING_MODE:
             num += 1
             prepos = curpos
 
-    print("| - RAPID: ROB1 generated")
+    print("| RAPID: ROB1 generated")
 
     file_path = os.path.join(rapid_gen_dir, "ROB2_target.txt")
     with open(file_path, "w") as file:
@@ -731,7 +731,7 @@ if SCHEDULING_MODE:
             num += 1
             prepos = curpos
 
-    print("| - RAPID: ROB2 generated")
+    print("| RAPID: ROB2 generated")
 
     file_path = os.path.join(rapid_gen_dir, "ROB3_target.txt")
     with open(file_path, "w") as file:
@@ -778,7 +778,7 @@ if SCHEDULING_MODE:
             num += 1
             prepos = curpos
 
-    print("| - RAPID: ROB3 generated")
+    print("| RAPID: ROB3 generated")
     print("|")
     print("========== Finish Scheduling ===========")
     print()
