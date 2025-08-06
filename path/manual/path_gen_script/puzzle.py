@@ -1,10 +1,21 @@
+import os
 import math
 
 
-twist = 0
+file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'puzzle.txt')
 
-with open("/home/ha/kamic/path/manual/puzzle.txt", "w") as file:
-    for layer in range(0, 50, 3):
+avoidance = 0
+
+
+def rotate_points(points, angle_deg):
+            angle_rad = math.radians(angle_deg)
+            cos_a = math.cos(angle_rad)
+            sin_a = math.sin(angle_rad)
+            return [(x * cos_a - y * sin_a, x * sin_a + y * cos_a) for x, y in points]
+
+
+with open(file_path, "w") as file:
+    for z in range(0, 50, 3):
         temp = []
 
         temp.append((200, 40))
@@ -17,26 +28,20 @@ with open("/home/ha/kamic/path/manual/puzzle.txt", "w") as file:
         temp.append((40, 150))
         temp.append((40, 200))
 
-        def rotate_points(points, angle_deg):
-            angle_rad = math.radians(angle_deg)
-            cos_a = math.cos(angle_rad)
-            sin_a = math.sin(angle_rad)
-            return [(x * cos_a - y * sin_a, x * sin_a + y * cos_a) for x, y in points]
-
         full_path = []
         for k in range(4):
             rotated = rotate_points(temp, 90 * k)
             full_path.extend(rotated)
 
-        twisted = full_path[twist:] + full_path[:twist]
+        full_path = full_path[avoidance:] + full_path[:avoidance]
 
-        for i in range(len(twisted)):
-            file.write(f"{twisted[i][0]} {twisted[i][1]} {layer}\n")
-            
-        file.write(f"{twisted[0][0]} {twisted[0][1]} {layer}\n")
+        for x, y in full_path:
+            file.write(f"{float(x)} {float(y)} {float(z)}\n")
+
+        file.write(f"{float(full_path[0][0])} {float(full_path[0][1])} {float(z)}\n")
         file.write(f"\n")
 
-        twist += 1
-        if twist == 2:
-            twist = -1
+        avoidance += 1
+        if avoidance == 2:
+            avoidance = -1
 
