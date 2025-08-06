@@ -75,6 +75,8 @@ Continuous integration with new hardware and robotic systems.
 -
 -
 -
+# ABB RobotStudio validation with RAPID
+<div width="100%" align="center"><img src="/robotstudio_sim.gif" align="center" width="100%"></div>
 <div width="100%" align="center"><img src="/robotstudio_img.png" align="center" width="100%"></div>
 -
 -
