@@ -271,10 +271,11 @@ if SCHEDULING_MODE:
                 for robot in ["robot1", "robot2", "robot3"]:
                     last_target = schedule[robot]._events[-1].data[-1]
                     home_pos = agent_models[robot].home_position
-                    current_pos = schedule[robot].get_state(time)
 
                     if np.allclose(last_target, home_pos):
                         schedule[robot]._events.pop()
+
+                    current_pos = schedule[robot].get_state(time)
 
                     dwelling_event = MoveEvent(
                         schedule[robot]._events[-1].end,
