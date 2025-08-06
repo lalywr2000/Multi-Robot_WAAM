@@ -1,15 +1,15 @@
 # Multi-Robot Wire Arc Additive Manufacturing
 
 <div width="100%" align="center">
-    <img width="33%" src="/nozzle_sim.gif">
-    <img width="33%" src="/puzzle_sim.gif">
-    <img width="33%" src="/square_sim.gif">
+    <img width="32%" src="/nozzle_sim.gif">
+    <img width="32%" src="/puzzle_sim.gif">
+    <img width="32%" src="/square_sim.gif">
 </div>
 
 <div width="100%" align="center">
-    <img width="33%" src="/nozzle_path.png">
-    <img width="33%" src="/puzzle_path.png">
-    <img width="33%" src="/square_path.png">
+    <img width="32%" src="/nozzle_path.png">
+    <img width="32%" src="/puzzle_path.png">
+    <img width="32%" src="/square_path.png">
 </div>
 
 
