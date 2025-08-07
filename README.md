@@ -65,7 +65,72 @@ Continuous integration with new hardware and robotic systems.
 
 
 
+-
+-
+-
+-
+-
+GCODE_MODE = False
+# True: input gcode path   # False: input manual path
+PREPROCESSING_MODE = False
+# True: preprocessing      # False: skip preprocessing
+SCHEDULING_MODE = True
+# True: scheduling         # False: visualizing
 
+ALGORITHM_MODE = 1
+# 0: sequential
+# 1: distance priority
+
+GCODE_PATH  = "./path/gcode/square.gcode"
+MANUAL_PATH = "./path/manual/nozzle.txt"
+
+ROBOT_REACHABLE_R  = 2500.0  # [mm]
+SUBSTRATE_SIZE     = 500.0   # [mm]
+MAX_CONTOUR_LENGTH = 300.0   # [mm]
+DWELLING_TIME      = 0.0
+
+
+
+GCODE_MODE = False
+# True: input gcode path   # False: input manual path
+PREPROCESSING_MODE = True
+# True: preprocessing      # False: skip preprocessing
+SCHEDULING_MODE = True
+# True: scheduling         # False: visualizing
+
+ALGORITHM_MODE = 1
+# 0: sequential
+# 1: distance priority
+
+GCODE_PATH  = "./path/gcode/square.gcode"
+MANUAL_PATH = "./path/manual/puzzle.txt"
+
+ROBOT_REACHABLE_R  = 2500.0  # [mm]
+SUBSTRATE_SIZE     = 500.0   # [mm]
+MAX_CONTOUR_LENGTH = 300.0   # [mm]
+DWELLING_TIME      = 0.0
+
+
+
+
+GCODE_MODE = True
+# True: input gcode path   # False: input manual path
+PREPROCESSING_MODE = True
+# True: preprocessing      # False: skip preprocessing
+SCHEDULING_MODE = True
+# True: scheduling         # False: visualizing
+
+ALGORITHM_MODE = 1
+# 0: sequential
+# 1: distance priority
+
+GCODE_PATH  = "./path/gcode/square.gcode"
+MANUAL_PATH = "./path/manual/nozzle.txt"
+
+ROBOT_REACHABLE_R  = 2500.0  # [mm]
+SUBSTRATE_SIZE     = 500.0   # [mm]
+MAX_CONTOUR_LENGTH = 300.0   # [mm]
+DWELLING_TIME      = 0.0
 
 
 
