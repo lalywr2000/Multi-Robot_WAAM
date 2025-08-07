@@ -74,20 +74,46 @@ The following shows how to run the examples included in the repository. First, c
 git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
 ```
 
-### - Example 1: nozzle aaa
+To run individual examples, you need to configure the variables at the top of the `multi-robot.py` file as follows. 
+
+### - Example 1: nozzle
+
+```python
+GCODE_MODE = False
+# True: input gcode path   # False: input manual path
+PREPROCESSING_MODE = False
+# True: preprocessing      # False: skip preprocessing
+SCHEDULING_MODE = True
+# True: scheduling         # False: visualizing
+
+ALGORITHM_MODE = 1
+# 0: sequential
+# 1: distance priority
+
+GCODE_PATH  = "./path/gcode/square.gcode"
+MANUAL_PATH = "./path/manual/nozzle.txt"
+
+ROBOT_REACHABLE_R  = 2500.0  # [mm]
+SUBSTRATE_SIZE     = 500.0   # [mm]
+MAX_CONTOUR_LENGTH = 300.0   # [mm]
+DWELLING_TIME      = 0.0
+```
 
 
-**Gazebo Simulator and Teleoperation Controller are for local environment. While this controller can simultaneously control physical PiRacer, if the purpose is solely simulation, the setup on Raspberry Pi can be disregarded, and only the local environment is utilized.**
 
+
+
+
+
+
+
+
+After modifying and saving the changes, run the example using the following command:
 
 ```bash
-# Local
-cd simulation_ws
-colcon build
-
-source install/local_setup.bash
-ros2 launch sim sim.launch.py
+git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
 ```
+
 
 
 
@@ -121,24 +147,7 @@ Continuous integration with new hardware and robotic systems.
 -
 -
 -
-GCODE_MODE = False
-# True: input gcode path   # False: input manual path
-PREPROCESSING_MODE = False
-# True: preprocessing      # False: skip preprocessing
-SCHEDULING_MODE = True
-# True: scheduling         # False: visualizing
 
-ALGORITHM_MODE = 1
-# 0: sequential
-# 1: distance priority
-
-GCODE_PATH  = "./path/gcode/square.gcode"
-MANUAL_PATH = "./path/manual/nozzle.txt"
-
-ROBOT_REACHABLE_R  = 2500.0  # [mm]
-SUBSTRATE_SIZE     = 500.0   # [mm]
-MAX_CONTOUR_LENGTH = 300.0   # [mm]
-DWELLING_TIME      = 0.0
 
 
 
