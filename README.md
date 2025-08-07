@@ -99,58 +99,9 @@ MAX_CONTOUR_LENGTH = 300.0   # [mm]
 DWELLING_TIME      = 0.0
 ```
 
+### - Example 2: [puzzle](/assets/puzzle_sim.gif)
 
-
-
-
-
-
-
-
-
-After modifying and saving the changes, run the example using the following command:
-
-```bash
-git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## How to Use
-- Installation: The software is compatible with ABB RobotStudio for verification and simulation. Make sure to set up your robot system and integrate the provided code for path planning and scheduling.
-
-- Visualization: Use the built-in visualization tool to monitor the deposition process in real-time and adjust parameters as needed.
-
-## Future Work
-Further optimization of scheduling algorithms for even better efficiency.
-
-Expansion to handle more complex multi-robot setups.
-
-Continuous integration with new hardware and robotic systems.
-
-
-
-
--
--
--
--
--
-
-
-
-
+```python
 GCODE_MODE = False
 # True: input gcode path   # False: input manual path
 PREPROCESSING_MODE = True
@@ -169,10 +120,11 @@ ROBOT_REACHABLE_R  = 2500.0  # [mm]
 SUBSTRATE_SIZE     = 500.0   # [mm]
 MAX_CONTOUR_LENGTH = 300.0   # [mm]
 DWELLING_TIME      = 0.0
+```
 
+### - Example 3: [square](/assets/square_sim.gif)
 
-
-
+```python
 GCODE_MODE = True
 # True: input gcode path   # False: input manual path
 PREPROCESSING_MODE = True
@@ -191,25 +143,22 @@ ROBOT_REACHABLE_R  = 2500.0  # [mm]
 SUBSTRATE_SIZE     = 500.0   # [mm]
 MAX_CONTOUR_LENGTH = 300.0   # [mm]
 DWELLING_TIME      = 0.0
+```
+
+After modifying and saving the changes, run the example using the following command:
+
+```bash
+python3 multi-robot.py
+```
+
+## ABB RobotStudio validation with RAPID
+
+<div width="100%" align="center"><img src="/assets/robotstudio_sim.gif" align="center" width="100%"></div>
+<div width="100%" align="center"><img src="/assets/robotstudio_img.png" align="center" width="100%"></div>
+
+With [ABB RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio), it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. RobotStudio is ABB's commercial software for robot simulation and Offline Programming (OLP), and it is implemented using RAPID code format.
 
 
-
--
--
--
--
--
--
-# ABB RobotStudio validation with RAPID
-<div width="100%" align="center"><img src="/robotstudio_sim.gif" align="center" width="100%"></div>
-<div width="100%" align="center"><img src="/robotstudio_img.png" align="center" width="100%"></div>
--
--
-
-
-## References
-Arbogast, Alex, et al. "Strategies for a scalable multi-robot large scale wire arc additive manufacturing system.“
-Additive Manufacturing Letters 8 (2024): 100183.
 
 
 future work
@@ -218,3 +167,8 @@ future work
 -> leveling distribution of heat on the part
 -> digital twin
 -> better allocation algorithm
+Further optimization of scheduling algorithms for even better efficiency.
+
+## References
+Arbogast, Alex, et al. "Strategies for a scalable multi-robot large scale wire arc additive manufacturing system.“
+Additive Manufacturing Letters 8 (2024): 100183.
