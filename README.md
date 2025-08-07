@@ -1,5 +1,9 @@
 # Multi-Robot WAAM Path Planning
 
+| ![nozzle](/assets/nozzle_sim.gif) | ![puzzle](/assets/puzzle_sim.gif) | ![square](/assets/square_sim.gif) |
+|:---:|:---:|:---:|
+| Nozzle | Puzzle | Square |
+
 <div width="100%" align="center">
     <img width="32%" src="/nozzle_sim.gif">
     <img width="32%" src="/puzzle_sim.gif">
@@ -11,6 +15,10 @@
     <img width="32%" src="/puzzle_path.png">
     <img width="32%" src="/square_path.png">
 </div>
+
+| ![Throttle](/images/throttle.gif) | ![Steering](/images/steering.gif) |
+|:---:|:---:|
+| Throttle | Steering |
 
 
 ## Multi-Robot WAAM Path Planning
@@ -156,9 +164,7 @@ This repository provides tools and examples for controlling and experimenting wi
 
 The idea is to utilize this repository as a template for **digital twin** research. By equipping PiRacer with sensors such as odometer, IMU, LiDAR, etc., and implementing closed-loop feedback control, it would be possible to more accurately replicate the behavior of the real-world PiRacer in Gazebo.
 
-| ![Throttle](/images/throttle.gif) | ![Steering](/images/steering.gif) |
-|:---:|:---:|
-| Throttle | Steering |
+
 
 ## ROS2 Packages
 
