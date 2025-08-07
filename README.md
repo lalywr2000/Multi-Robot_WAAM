@@ -156,19 +156,50 @@ python3 multi-robot.py
 <div width="100%" align="center"><img src="/assets/robotstudio_sim.gif" align="center" width="100%"></div>
 <div width="100%" align="center"><img src="/assets/robotstudio_img.png" align="center" width="100%"></div>
 
-With [ABB RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio), it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. RobotStudio is ABB's commercial software for robot simulation and Offline Programming (OLP), and it is implemented using RAPID code format.
+With [ABB RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio), it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. RobotStudio is ABB's commercial software for robot simulation and Offline Programming (OLP), and it is implemented using RAPID code format. (EDIT POINT)
 
+```shell
+MODULE Module1
+    CONST robtarget Target_1:=[[0,0,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget Target_2:=[[500,0,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget Target_3:=[[500,500,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    ...     <--- (copy & paste ROB1_target here)
 
+    VAR syncident sync1;
+    VAR syncident sync2;
+    PERS tasks all_tasks{2}:=[["T_ROB1"],["T_ROB2"]];
+    
+    PROC mhome()
+        MoveJ Target_1\ID:=1,v500,fine,Weldgun1\WObj:=Workobject_1;
+    ENDPROC
+    
+    PROC main()
+        ConfJ\Off;
+        ConfL\Off;
+        AccSet 100,100;
+    
+        WaitSyncTask sync1,all_tasks;
+        SyncMoveOn sync2,all_tasks;
+        mhome;
+        SyncMoveOff sync2;
+    
+        MoveL Target_1,v1000,fine,Weldgun1\WObj:=Workobject_1;
+        MoveL Target_2,v1000,fine,Weldgun1\WObj:=Workobject_1;
+        MoveL Target_3,v1000,fine,Weldgun1\WObj:=Workobject_1;
+        ...     <--- (copy & paste ROB1_move here)
+    ENDPROC
+ENDMODULE
+```
 
+## future work
 
-future work
--> offline to online planning
--> minimize build time (formulation for optimization problem)
--> leveling distribution of heat on the part
--> digital twin
--> better allocation algorithm
-Further optimization of scheduling algorithms for even better efficiency.
+- Offline to online planning
+- Minimize build time (formulation for optimization problem)
+- Considering heat leveling
+- Digital twin
+- Further optimization of scheduling algorithms for even better efficiency.
 
 ## References
-Arbogast, Alex, et al. "Strategies for a scalable multi-robot large scale wire arc additive manufacturing system.“
+
+Arbogast, Alex, et al. "Strategies for a scalable multi-robot large scale wire arc additive manufacturing system."
 Additive Manufacturing Letters 8 (2024): 100183.
