@@ -76,7 +76,7 @@ git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
 
 To run individual examples, you need to configure the variables at the top of the `multi-robot.py` file as follows. 
 
-### - Example 1: nozzle
+### - Example 1: [nozzle](/assets/nozzle_sim.gif)
 
 ```python
 GCODE_MODE = False
