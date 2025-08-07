@@ -1,28 +1,20 @@
 # Multi-Robot WAAM Path Planning
 
-| ![nozzle](/assets/nozzle_sim.gif) | ![puzzle](/assets/puzzle_sim.gif) | ![square](/assets/square_sim.gif) |
-|:---:|:---:|:---:|
-| Nozzle | Puzzle | Square |
+## Project Overview
 
 <div width="100%" align="center">
-    <img width="32%" src="/nozzle_sim.gif">
-    <img width="32%" src="/puzzle_sim.gif">
-    <img width="32%" src="/square_sim.gif">
+    <img width="32%" src="/assets/nozzle_sim.gif">
+    <img width="32%" src="/assets/puzzle_sim.gif">
+    <img width="32%" src="/assets/square_sim.gif">
 </div>
 
 <div width="100%" align="center">
-    <img width="32%" src="/nozzle_path.png">
-    <img width="32%" src="/puzzle_path.png">
-    <img width="32%" src="/square_path.png">
+    <img width="32%" src="/assets/nozzle_path.png">
+    <img width="32%" src="/assets/puzzle_path.png">
+    <img width="32%" src="/assets/square_path.png">
 </div>
 
-| ![Throttle](/images/throttle.gif) | ![Steering](/images/steering.gif) |
-|:---:|:---:|
-| Throttle | Steering |
-
-
-## Multi-Robot WAAM Path Planning
-Project Overview
+z
 This project focuses on the development of a Multi-Robot Path Planning system for Wire Arc Additive Manufacturing (WAAM). The goal is to enhance the efficiency and scalability of WAAM by integrating multiple robotic arms for collaborative 3D printing tasks. This approach aims to increase the printable volume and parallel deposition capability, while ensuring the effective scheduling, collision avoidance, and synchronization of robots.
 
 ## Key Features
@@ -158,7 +150,7 @@ DWELLING_TIME      = 0.0
 
 ---
 below contents are not related to this project, just for md format references
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 This repository provides tools and examples for controlling and experimenting with **PiRacer model vehicle** in Gazebo. The Gazebo model, designed to match the hardware specifications of PiRacer, can be controlled via ROS2 topic communication. The included teleoperation example is a simple demonstration using the WASD keys on the keyboard, allowing simultaneous control of both the real PiRacer and the PiRacer in Gazebo.
 
