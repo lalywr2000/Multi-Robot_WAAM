@@ -153,21 +153,9 @@ python3 multi-robot.py
 
 ## ABB RobotStudio validation with RAPID
 
-<div width="100%" align="center">
-    <img width="32%" src="/assets/robotstudio_sim.gif">
-    <img width="32%" src="/assets/robotstudio_img.png">
-</div>
-
-
-
-<div width="100%" align="center"><img src="/assets/robotstudio_sim.gif" align="center" width="100%"></div>
-
----
-
 With [ABB RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio), it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. RobotStudio is ABB's commercial software for robot simulation and Offline Programming (OLP), and it is implemented using RAPID code format. (EDIT POINT)
 
----
-
+<div width="100%" align="center"><img src="/assets/robotstudio_sim.gif" align="center" width="100%"></div>
 <div width="100%" align="center"><img src="/assets/robotstudio_img.png" align="center" width="100%"></div>
 
 ```shell
