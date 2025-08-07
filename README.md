@@ -145,11 +145,13 @@ DWELLING_TIME      = 0.0
 <div width="100%" align="center"><img src="/robotstudio_img.png" align="center" width="100%"></div>
 -
 -
--
--
 
----
-below contents are not related to this project, just for md format references
+
+## References
+Arbogast, Alex, et al. "Strategies for a scalable multi-robot large scale wire arc additive manufacturing system.“
+Additive Manufacturing Letters 8 (2024): 100183.
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 This repository provides tools and examples for controlling and experimenting with **PiRacer model vehicle** in Gazebo. The Gazebo model, designed to match the hardware specifications of PiRacer, can be controlled via ROS2 topic communication. The included teleoperation example is a simple demonstration using the WASD keys on the keyboard, allowing simultaneous control of both the real PiRacer and the PiRacer in Gazebo.
@@ -246,8 +248,4 @@ Design various experiments and developments using the Gazebo PiRacer. This packa
 
 <div width="100%" align="center"><img src="/images/camera.png" align="center" width="70%"></div>
 
-## References
 
-- [Waveshare PiRacer](https://www.waveshare.com/wiki/PiRacer_AI_Kit)
-- [ROS2 Foxy](https://docs.ros.org/en/foxy/index.html)
-- [Gazebo](https://classic.gazebosim.org/)
