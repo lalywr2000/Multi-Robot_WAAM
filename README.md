@@ -37,7 +37,35 @@ In particular, this project utilizes and extends functionality from [Pyrobopath]
 - Well-structured data models and algorithms for paths, contours, events, and scheduling
 - Collision detection using [bounding box method](https://pyrobopath.readthedocs.io/en/latest/users/examples/python_examples.html) and the [python-fcl](https://github.com/BerkeleyAutomation/python-fcl) library
 
-For more details, refer to the Pyrobopath repository and documentation.
+For more details, refer to the **Pyrobopath** repository and documentation.
+
+## Directory Structure
+
+```shell
+./
+ ├── multi-robot.py   # Main code for path planning
+ │
+ ├── path/
+ │   └── gcode/       # Location for .gcode path files
+ │   └── manual/      # Location for .txt path files
+ │        └── path_gen_script/   # Script for generating manual .txt paths
+ │
+ └── rapid_gen/       # Location for RAPID code output
+```
+
+## Requirements
+
+Before using this package, ensure the following prerequisites are installed:
+
+| Device           | Software/Framework                                                                 | Functionality              |
+|------------------|------------------------------------------------------------------------------------|----------------------------|
+| **Local**        | [Gazebo 11](https://fdeantoni.medium.com/ros2-dev-with-gazebo-11-3f1795bba33)      | Simulation environment     |
+| **Local**        | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
+| **Local**        | [pygame](https://pypi.org/project/pygame/)                                         | Keyboard input for control |
+| **Raspberry Pi** | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
+| **Raspberry Pi** | [piracer](https://github.com/twyleg/piracer_py)                                    | Physical PiRacer control   |
+
+This package has been developed and tested on both local machine and Raspberry Pi 4, using Ubuntu 20.04.
 
 
 
@@ -46,40 +74,16 @@ For more details, refer to the Pyrobopath repository and documentation.
 
 
 
-This project focuses on the development of a Multi-Robot Path Planning system for Wire Arc Additive Manufacturing (WAAM). The goal is to enhance the efficiency and scalability of WAAM by integrating multiple robotic arms for collaborative 3D printing tasks. This approach aims to increase the printable volume and parallel deposition capability, while ensuring the effective scheduling, collision avoidance, and synchronization of robots.
 
-## Key Features
-- Multi-Robot Coordination: The system supports multiple robotic arms working in parallel to deposit material, effectively increasing the build volume and speed.
 
-- Path Planning & Scheduling: Efficient scheduling algorithms are applied at the bead level for each robot. The system ensures proper robot placement, path collision avoidance, and accessibility range considerations.
 
-- Collision Detection: Collision detection is implemented by using bounding boxes to monitor interactions between robotic arms during the deposition process.
 
-- Real-Time Visualization: A visualization tool is integrated to provide real-time feedback on the deposition process, helping to optimize the workflow and ensure quality control.
 
-- Automatic Code Conversion: The system features automatic conversion of RAPID code for verification in ABB RobotStudio, allowing seamless integration with existing robot control systems.
 
-- Flexible Deposition Scenarios: The system can handle different deposition setups, including dual and triple-robot deposition configurations.
 
-## Benefits of Multi-Robot Systems in WAAM
-- Parallel Deposition Capability: Multiple robots working simultaneously can deposit material faster, significantly reducing production time.
 
-- Larger Printable Volume: The use of multiple robots increases the total build volume, allowing for the creation of larger parts.
 
-- Efficient Scheduling: By carefully coordinating the robots' actions, the system minimizes idle times and optimizes the overall manufacturing process.
 
-- Enhanced Flexibility: The system is adaptable to a variety of deposition scenarios, making it suitable for different manufacturing requirements.
-
-## Research Background
-This work is inspired by the research conducted by Oak Ridge National Laboratory (ORNL, USA), which demonstrated the potential of multi-robot-based WAAM systems. Their approach utilized a custom-developed path planning algorithm, and this project builds upon their successful implementation, adding new capabilities such as centralized task scheduling and advanced collision detection.
-
-## Development Progress
-- Scheduling & Path Planning: Algorithms are developed to schedule robot actions and plan paths based on the build structure, with careful consideration of cooling times (dwell) and robot accessibility.
-
-- Verification in RobotStudio: The system has been verified using ABB RobotStudio, where robot operations and collision detection were tested in virtual environments to ensure safe and accurate execution.
-
-- Real-World Testing
-The system has been tested in real-world scenarios, demonstrating its effectiveness in multi-robot synchronization and its ability to adapt to various deposition tasks, such as the creation of complex parts like rocket nozzles.
 
 ## How to Use
 - Installation: The software is compatible with ABB RobotStudio for verification and simulation. Make sure to set up your robot system and integrate the provided code for path planning and scheduling.
@@ -189,38 +193,11 @@ future work
 -> leveling distribution of heat on the part
 -> digital twin
 -> better allocation algorithm
+
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-This repository provides tools and examples for controlling and experimenting with **PiRacer model vehicle** in Gazebo. The Gazebo model, designed to match the hardware specifications of PiRacer, can be controlled via ROS2 topic communication. The included teleoperation example is a simple demonstration using the WASD keys on the keyboard, allowing simultaneous control of both the real PiRacer and the PiRacer in Gazebo.
-
-The idea is to utilize this repository as a template for **digital twin** research. By equipping PiRacer with sensors such as odometer, IMU, LiDAR, etc., and implementing closed-loop feedback control, it would be possible to more accurately replicate the behavior of the real-world PiRacer in Gazebo.
-
-
-
-## ROS2 Packages
-
-```shell
-./
- ├── simulation_ws/src/
- │   └── sim        # Description and launch file for PiRacer model
- │
- └── teleoperation_ws/src/
-     └── teleop     # Remote control example including a controller and a receiver
-```
-
-## Requirements
-
-Before using this package, ensure the following prerequisites are installed:
-
-| Device           | Software/Framework                                                                 | Functionality              |
-|------------------|------------------------------------------------------------------------------------|----------------------------|
-| **Local**        | [Gazebo 11](https://fdeantoni.medium.com/ros2-dev-with-gazebo-11-3f1795bba33)      | Simulation environment     |
-| **Local**        | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
-| **Local**        | [pygame](https://pypi.org/project/pygame/)                                         | Keyboard input for control |
-| **Raspberry Pi** | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
-| **Raspberry Pi** | [piracer](https://github.com/twyleg/piracer_py)                                    | Physical PiRacer control   |
-
-This package has been developed and tested on both local machine and Raspberry Pi 4, using Ubuntu 20.04.
 
 ## Usage
 
