@@ -37,7 +37,7 @@ In particular, this project utilizes and extends functionality from [Pyrobopath]
 - Well-structured data models and algorithms for paths, contours, events, and scheduling
 - Collision detection using [bounding box method](https://pyrobopath.readthedocs.io/en/latest/users/examples/python_examples.html) and the [python-fcl](https://github.com/BerkeleyAutomation/python-fcl) library
 
-For more details, refer to the **Pyrobopath** repository and documentation.
+For more details, refer to the Pyrobopath repository and documentation.
 
 ## Directory Structure
 
@@ -55,23 +55,39 @@ For more details, refer to the **Pyrobopath** repository and documentation.
 
 ## Requirements
 
-Before using this package, ensure the following prerequisites are installed:
+Before running the program, ensure that the following prerequisites are installed:
 
-| Device           | Software/Framework                                                                 | Functionality              |
-|------------------|------------------------------------------------------------------------------------|----------------------------|
-| **Local**        | [Gazebo 11](https://fdeantoni.medium.com/ros2-dev-with-gazebo-11-3f1795bba33)      | Simulation environment     |
-| **Local**        | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
-| **Local**        | [pygame](https://pypi.org/project/pygame/)                                         | Keyboard input for control |
-| **Raspberry Pi** | [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) | Robotics middleware        |
-| **Raspberry Pi** | [piracer](https://github.com/twyleg/piracer_py)                                    | Physical PiRacer control   |
+```bash
+pip install numpy
+pip install matplotlib
+pip install gcodeparser
+pip install pyrobopath
+```
 
-This package has been developed and tested on both local machine and Raspberry Pi 4, using Ubuntu 20.04.
+This program has been developed and tested using Ubuntu 20.04 and Pyrobopath 0.2.8
+
+## Usage
+
+The following shows how to run the examples included in the repository. First, clone the repository using the following command:
+
+```bash
+git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
+```
+
+### - Example 1: nozzle aaa
 
 
+**Gazebo Simulator and Teleoperation Controller are for local environment. While this controller can simultaneously control physical PiRacer, if the purpose is solely simulation, the setup on Raspberry Pi can be disregarded, and only the local environment is utilized.**
 
 
+```bash
+# Local
+cd simulation_ws
+colcon build
 
-
+source install/local_setup.bash
+ros2 launch sim sim.launch.py
+```
 
 
 
@@ -193,73 +209,3 @@ future work
 -> leveling distribution of heat on the part
 -> digital twin
 -> better allocation algorithm
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-## Usage
-
-**Gazebo Simulator and Teleoperation Controller are for local environment. While this controller can simultaneously control physical PiRacer, if the purpose is solely simulation, the setup on Raspberry Pi can be disregarded, and only the local environment is utilized.**
-
-### 0. Package Configuration
-
-Change the `gazebo_model_path` in the **package.xml** located in `simulation_ws/src/sim` to suit your local environment.
-
-### 1. Launch Gazebo Simulator
-
-```bash
-# Local
-cd simulation_ws
-colcon build
-
-source install/local_setup.bash
-ros2 launch sim sim.launch.py
-```
-
-You should see the PiRacer model inside the Gazebo simulation window.
-
-### 2. Run Teleoperation Receiver
-
-```bash
-# Raspberry Pi
-cd teleoperation_ws
-colcon build
-
-source install/local_setup.bash
-ros2 run teleop receiver
-```
-
-### 3. Run Teleoperation Controller
-
-```bash
-# Local
-cd teleoperation_ws
-
-source install/local_setup.bash
-ros2 run teleop controller
-```
-
-When you run the controller, a small pygame window like the following will appear.
-
-<div width="100%" align="center"><img src="/images/controller.png" align="center" width="30%"></div>
-
-Click on this window and press the WASD keys on the keyboard. Observe the movement of both Gazebo PiRacer and physical PiRacer.
-
-## Note
-
-The communication between controller node and receiver node is machine-to-machine. Make sure that local machine and Raspberry Pi are connected to the same WLAN. If connection is not successful, disable the firewall using the following command.
-
-```bash
-# Local & Raspberry Pi
-sudo ufw disable
-```
-
-## Explore
-
-Design various experiments and developments using the Gazebo PiRacer. This package provides an example with the PiRacer camera. Check the view of the PiRacer's camera using **RViz2**. For instance, you can use this image data to implement autonomous driving in the simulation.
-
-<div width="100%" align="center"><img src="/images/camera.png" align="center" width="70%"></div>
-
-
