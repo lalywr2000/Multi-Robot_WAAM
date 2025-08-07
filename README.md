@@ -33,8 +33,8 @@ Multi-robot WAAM was first successfully demonstrated by [Oak Ridge National Labo
 
 In particular, this project utilizes and extends functionality from [Pyrobopath](https://github.com/alexarbogast/pyrobopath), a Python package designed for demonstrating multi-robot path planning in additive manufacturing. Pyrobopath includes:
 
-- Well-structured data models and algorithms for paths, contours, events, and scheduling
 - Centralized bead-level scheduling system
+- Well-structured data models and algorithms for paths, contours, events, and scheduling
 - Collision detection using [bounding box method](https://pyrobopath.readthedocs.io/en/latest/users/examples/python_examples.html) and the [python-fcl](https://github.com/BerkeleyAutomation/python-fcl) library
 
 For more details, refer to the Pyrobopath repository and documentation.
@@ -42,10 +42,10 @@ For more details, refer to the Pyrobopath repository and documentation.
 
 
 
-!!!!!!!!!!!!
 
 
-z
+
+
 This project focuses on the development of a Multi-Robot Path Planning system for Wire Arc Additive Manufacturing (WAAM). The goal is to enhance the efficiency and scalability of WAAM by integrating multiple robotic arms for collaborative 3D printing tasks. This approach aims to increase the printable volume and parallel deposition capability, while ensuring the effective scheduling, collision avoidance, and synchronization of robots.
 
 ## Key Features
