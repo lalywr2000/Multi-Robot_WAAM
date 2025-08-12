@@ -100,13 +100,14 @@ python3 multi-robot.py
 [RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio) is ABB's commercial software, implemented in the RAPID code format, and supports simulation and Offline Programming (OLP). By utilizing this virtual test environment, it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. 
 
 <div width="100%" align="center">
-    <img width="51%" src="/assets/robotstudio_sim.gif">
+    <img width="51.2%" src="/assets/robotstudio_sim.gif">
     <img width="48%" src="/assets/robotstudio_img.png">
 </div>
 
--> layout position rotation modelname substrate size position color weldgunnum wobjnum
+The above example was tested using three **IRB 4600-40/2.55** robots and a substrate measuring 500 mm × 500 mm.
 
-rapid code formulation:
+In RobotStudio, the layout of the robot (position and orientation) and the substrate (size and location) must match those defined in the `multi-robot.py` code. Furthermore, the names of the robot model, tool (weld gun), and work object coordinate system must remain consistent and aligned with the RAPID code.
+
 
 
 
