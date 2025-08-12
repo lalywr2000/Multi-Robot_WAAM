@@ -82,8 +82,8 @@ To run individual examples, you need to configure the variables at the top of th
 | PREPROCESSING_MODE | False                            | True                             | True                             |
 | SCHEDULING_MODE    | True                             | True                             | True                             |
 | ALGORITHM_MODE     | 1                                | 1                                | 1                                |
-| GCODE_PATH         | N/A                              | N/A                              | ./path/gcode/square.gcode        |
-| MANUAL_PATH        | ./path/manual/nozzle.txt         | ./path/manual/puzzle.txt         | N/A                              |
+| GCODE_PATH         | N/A                              | N/A                              | square.gcode                     |
+| MANUAL_PATH        | nozzle.txt                       | puzzle.txt                       | N/A                              |
 | ROBOT_REACHABLE_R  | 2500.0                           | 2500.0                           | 2500.0                           |
 | SUBSTRATE_SIZE     | 500.0                            | 500.0                            | 500.0                            |
 | MAX_CONTOUR_LENGTH | N/A                              | 300.0                            | 300.0                            |
@@ -97,7 +97,7 @@ python3 multi-robot.py
 
 ## ABB RobotStudio validation with RAPID
 
-With [ABB RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio), it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. RobotStudio is ABB's commercial software for robot simulation and Offline Programming (OLP), and it is implemented using RAPID code format. (EDIT POINT)
+[RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio) is ABB's commercial software, implemented in the RAPID code format, and supports simulation and Offline Programming (OLP). By utilizing this virtual test environment, it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. 
 
 <div width="100%" align="center"><img src="/assets/robotstudio_sim.gif" align="center" width="100%"></div>
 <div width="100%" align="center"><img src="/assets/robotstudio_img.png" align="center" width="100%"></div>
