@@ -34,7 +34,7 @@ Multi-robot WAAM was first successfully demonstrated by [Oak Ridge National Labo
 In particular, this project utilizes and extends functionality from [Pyrobopath](https://github.com/alexarbogast/pyrobopath), a Python package designed for demonstrating multi-robot path planning in additive manufacturing. Pyrobopath includes:
 
 - Centralized bead-level scheduling system
-- Well-structured data models and algorithms for paths, contours, events, and scheduling
+- Data models and algorithms for paths, contours, events, and scheduling
 - Collision detection using [bounding box method](https://pyrobopath.readthedocs.io/en/latest/users/examples/python_examples.html) and the [python-fcl](https://github.com/BerkeleyAutomation/python-fcl) library
 
 For more details, refer to the Pyrobopath repository and documentation.
@@ -76,74 +76,18 @@ git clone https://github.com/lalywr2000/Multi-Robot_WAAM.git
 
 To run individual examples, you need to configure the variables at the top of the `multi-robot.py` file as follows. 
 
-### - Example 1: [nozzle](/assets/nozzle_sim.gif)
-
-```python
-GCODE_MODE = False
-# True: input gcode path   # False: input manual path
-PREPROCESSING_MODE = False
-# True: preprocessing      # False: skip preprocessing
-SCHEDULING_MODE = True
-# True: scheduling         # False: visualizing
-
-ALGORITHM_MODE = 1
-# 0: sequential
-# 1: distance priority
-
-GCODE_PATH  = "./path/gcode/square.gcode"
-MANUAL_PATH = "./path/manual/nozzle.txt"
-
-ROBOT_REACHABLE_R  = 2500.0  # [mm]
-SUBSTRATE_SIZE     = 500.0   # [mm]
-MAX_CONTOUR_LENGTH = 300.0   # [mm]
-DWELLING_TIME      = 0.0
-```
-
-### - Example 2: [puzzle](/assets/puzzle_sim.gif)
-
-```python
-GCODE_MODE = False
-# True: input gcode path   # False: input manual path
-PREPROCESSING_MODE = True
-# True: preprocessing      # False: skip preprocessing
-SCHEDULING_MODE = True
-# True: scheduling         # False: visualizing
-
-ALGORITHM_MODE = 1
-# 0: sequential
-# 1: distance priority
-
-GCODE_PATH  = "./path/gcode/square.gcode"
-MANUAL_PATH = "./path/manual/puzzle.txt"
-
-ROBOT_REACHABLE_R  = 2500.0  # [mm]
-SUBSTRATE_SIZE     = 500.0   # [mm]
-MAX_CONTOUR_LENGTH = 300.0   # [mm]
-DWELLING_TIME      = 0.0
-```
-
-### - Example 3: [square](/assets/square_sim.gif)
-
-```python
-GCODE_MODE = True
-# True: input gcode path   # False: input manual path
-PREPROCESSING_MODE = True
-# True: preprocessing      # False: skip preprocessing
-SCHEDULING_MODE = True
-# True: scheduling         # False: visualizing
-
-ALGORITHM_MODE = 1
-# 0: sequential
-# 1: distance priority
-
-GCODE_PATH  = "./path/gcode/square.gcode"
-MANUAL_PATH = "./path/manual/nozzle.txt"
-
-ROBOT_REACHABLE_R  = 2500.0  # [mm]
-SUBSTRATE_SIZE     = 500.0   # [mm]
-MAX_CONTOUR_LENGTH = 300.0   # [mm]
-DWELLING_TIME      = 0.0
-```
+| Example            | [nozzle](/assets/nozzle_sim.gif) | [puzzle](/assets/puzzle_sim.gif) | [square](/assets/square_sim.gif) |
+|:-------------------|:--------------------------------:|:--------------------------------:|:--------------------------------:|
+| GCODE_MODE         | False                            | False                            | True                             |
+| PREPROCESSING_MODE | False                            | True                             | True                             |
+| SCHEDULING_MODE    | True                             | True                             | True                             |
+| ALGORITHM_MODE     | 1                                | 1                                | 1                                |
+| GCODE_PATH         | N/A                              | N/A                              | "./path/gcode/square.gcode"      |
+| MANUAL_PATH        | "./path/manual/nozzle.txt"       | "./path/manual/puzzle.txt"       | N/A                              |
+| ROBOT_REACHABLE_R  | 2500.0                           | 2500.0                           | 2500.0                           |
+| SUBSTRATE_SIZE     | 500.0                            | 500.0                            | 500.0                            |
+| MAX_CONTOUR_LENGTH | N/A                              | 300.0                            | 300.0                            |
+| DWELLING_TIME      | 0.0                              | 0.0                              | 0.0                              |
 
 After modifying and saving the changes, run the example using the following command:
 
