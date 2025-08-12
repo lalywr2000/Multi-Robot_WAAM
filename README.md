@@ -82,8 +82,8 @@ To run individual examples, you need to configure the variables at the top of th
 | PREPROCESSING_MODE | False                            | True                             | True                             |
 | SCHEDULING_MODE    | True                             | True                             | True                             |
 | ALGORITHM_MODE     | 1                                | 1                                | 1                                |
-| GCODE_PATH         | N/A                              | N/A                              | square.gcode                     |
-| MANUAL_PATH        | nozzle.txt                       | puzzle.txt                       | N/A                              |
+| GCODE_PATH         | N/A                              | N/A                              | path/gcode/square.gcode          |
+| MANUAL_PATH        | path/manual/nozzle.txt           | path/manual/puzzle.txt           | N/A                              |
 | ROBOT_REACHABLE_R  | 2500.0                           | 2500.0                           | 2500.0                           |
 | SUBSTRATE_SIZE     | 500.0                            | 500.0                            | 500.0                            |
 | MAX_CONTOUR_LENGTH | N/A                              | 300.0                            | 300.0                            |
