@@ -95,7 +95,7 @@ After modifying and saving the changes, run the example using the following comm
 python3 multi-robot.py
 ```
 
-## ABB RobotStudio validation with RAPID
+## ABB RobotStudio Validation with RAPID
 
 [RobotStudio](https://new.abb.com/products/robotics/software-and-digital/robotstudio) is ABB's commercial software, implemented in the RAPID code format, and supports simulation and Offline Programming (OLP). By utilizing this virtual test environment, it is possible to validate whether path following is feasible without collisions, considering the robot layout and the movement of joints. 
 
@@ -104,50 +104,69 @@ python3 multi-robot.py
     <img width="48%" src="/assets/robotstudio_img.png">
 </div>
 
-The above example was tested using three **IRB 4600-40/2.55** robots and a substrate measuring 500 mm × 500 mm.
+The above example was tested using three IRB 4600-40/2.55 robots and a substrate measuring 500 mm × 500 mm.
 
-In RobotStudio, the layout of the robot (position and orientation) and the substrate (size and location) must match those defined in the `multi-robot.py` code. Furthermore, the names of the robot model, tool (weld gun), and work object coordinate system must remain consistent and aligned with the RAPID code.
+In RobotStudio, the layout of the robot (position and orientation) and the substrate (size and location) must match those defined in the `multi-robot.py` code. Furthermore, the names of the robot model, tool (weld gun), and work object coordinate system must remain consistent and aligned with their respective RAPID code.
 
-
-
+### RAPID Code Generation
 
 ```shell
 MODULE Module1
-    CONST robtarget Target_1:=[[0,0,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget Target_2:=[[500,0,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget Target_3:=[[500,500,100],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    ...     <--- (copy & paste ROB1_target here)
+    < COPY & PASTE ROB1_target.txt HERE >
+    CONST robtarget Target_1:=[[-50.0, 550.0, 600.0],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget Target_2:=[[-49.03427708839263, 548.6479879237497, 594.234634217704],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget Target_3:=[[-48.068554176785256, 547.2959758474993, 588.4692684354079],[0,0,1,0],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    ...
+    ...
+    ...
 
-    VAR syncident sync1;
-    VAR syncident sync2;
-    PERS tasks all_tasks{2}:=[["T_ROB1"],["T_ROB2"]];
-    
+    VAR Syncident Sync1;
+    VAR Syncident Sync2;
+    PERS tasks all_tasks{3}:=[["T_ROB1"],["T_ROB2"],["T_ROB3"]];
+
     PROC mhome()
-        MoveJ Target_1\ID:=1,v500,fine,Weldgun1\WObj:=Workobject_1;
+        MoveL Target_1\ID:=1,v500,fine,Weldgun_1\WObj:=Workobject_1;
     ENDPROC
-    
+
     PROC main()
-        ConfJ\Off;
         ConfL\Off;
+        ConfJ\Off;
         AccSet 100,100;
-    
-        WaitSyncTask sync1,all_tasks;
-        SyncMoveOn sync2,all_tasks;
+
+        WaitSyncTask Sync1,all_tasks;
+        SyncMoveOn Sync2,all_tasks;
         mhome;
-        SyncMoveOff sync2;
-    
-        MoveL Target_1,v1000,fine,Weldgun1\WObj:=Workobject_1;
-        MoveL Target_2,v1000,fine,Weldgun1\WObj:=Workobject_1;
-        MoveL Target_3,v1000,fine,Weldgun1\WObj:=Workobject_1;
-        ...     <--- (copy & paste ROB1_move here)
+        SyncMoveOff Sync2;
+
+        < COPY & PASTE ROB1_move.txt HERE >
+        MoveL Target_1,v300,fine,Weldgun_1\WObj:=Workobject_1;
+        MoveL Target_2,v300,z0,Weldgun_1\WObj:=Workobject_1;
+        MoveL Target_3,v300,z0,Weldgun_1\WObj:=Workobject_1;
+        ...
+        ...
+        ...
     ENDPROC
 ENDMODULE
 ```
 
-## future work
+## Future Work
 
-- Offline to online planning
-- Minimize build time (formulation for optimization problem)
-- Considering heat leveling
-- Digital twin
-- Further optimization of scheduling algorithms for even better efficiency.
+**1. Offline to Online Planning**
+
+Develop a seamless workflow to transition from offline simulation to real-time online execution, ensuring smooth deployment on physical systems.
+
+**2. Minimize Build Time**
+
+Formulate and solve an optimization problem aimed at reducing total build time while maintaining process quality.
+
+**3. Considering Heat Leveling**
+
+Incorporate thermal distribution analysis into the planning stage to achieve uniform heat leveling and reduce material distortion.
+
+**4. Digital Twin**
+
+Implement a digital twin of the manufacturing environment for real-time monitoring, predictive maintenance, and enhanced simulation accuracy.
+
+**5. Further Optimization of Scheduling Algorithms**
+
+Refine and enhance scheduling algorithms to achieve even greater operational efficiency and throughput.
